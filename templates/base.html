@@ -1,0 +1,70 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block titulo %}CSS Report{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/gestion.css' %}">
+</head>
+<body>
+    <div class="contenedor-aplicacion {% if mostrar_barra_lateral == False %}contenedor-aplicacion--sin-lateral{% endif %}" data-contenedor>
+        {% if mostrar_barra_lateral != False %}
+        <aside class="barra-lateral" aria-label="Navegación principal">
+            <a class="marca" href="{% url 'gestion:panel' %}" aria-label="CSS Report">
+                <span class="marca__escudo">
+                    {% include "gestion/iconos.html" with icono="institucion" %}
+                </span>
+            </a>
+
+            <nav class="navegacion-principal">
+                <a class="navegacion-principal__enlace {% if seccion_activa == 'gestion' %}activo{% endif %}" href="{% url 'gestion:panel' %}">
+                    {% include "gestion/iconos.html" with icono="cuadricula" %}
+                    <span>Gestión</span>
+                </a>
+            </nav>
+        </aside>
+        {% endif %}
+
+        <div class="area-principal">
+            <header class="barra-superior">
+                    <button class="boton-icono boton-menu" type="button" data-accion="alternar-menu" aria-label="Alternar menú lateral">
+                    {% include "gestion/iconos.html" with icono="menu" %}
+                </button>
+
+                <div class="acciones-usuario">
+                    <button class="boton-icono" type="button" aria-label="Ver notificaciones">
+                        {% include "gestion/iconos.html" with icono="campana" %}
+                    </button>
+
+                    <div class="perfil" data-perfil>
+                        <button class="perfil__boton" type="button" data-accion="alternar-perfil" aria-expanded="false">
+                            <span class="perfil__iniciales">{{ usuario_actual.iniciales }}</span>
+                            <span class="perfil__nombre">{{ usuario_actual.nombre }}</span>
+                            {% include "gestion/iconos.html" with icono="chevron-abajo" %}
+                        </button>
+                        <div class="perfil__menu" role="menu">
+                            <a href="#" role="menuitem">Mi perfil</a>
+                            <a href="#" role="menuitem">Configuración</a>
+                            <a href="#" role="menuitem">Cerrar sesión</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="contenido">
+                {% if messages %}
+                    <div class="mensajes-sistema" aria-live="polite">
+                        {% for message in messages %}
+                            <p class="mensaje-sistema mensaje-sistema--{{ message.tags }}">{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% block contenido %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <script src="{% static 'js/gestion.js' %}"></script>
+</body>
+</html>

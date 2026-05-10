@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block titulo %}Gestión | CSS Report{% endblock %}
+
+{% block contenido %}
+<section class="encabezado-pagina" aria-labelledby="titulo-gestion">
+    <h1 id="titulo-gestion">Gestión</h1>
+    <p>Seleccione una opción para acceder al módulo correspondiente.</p>
+</section>
+
+<section class="grid-modulos" aria-label="Módulos de gestión">
+    {% for modulo in modulos %}
+        <a class="tarjeta-modulo" href="{% url 'gestion:detalle_modulo' modulo.slug %}">
+            <span class="tarjeta-modulo__icono tarjeta-modulo__icono--{{ modulo.color }}">
+                {% include "gestion/iconos.html" with icono=modulo.icono %}
+            </span>
+            <span class="tarjeta-modulo__texto">
+                <strong>{{ modulo.codigo }}. {{ modulo.nombre }}</strong>
+                {% if modulo.subtitulo %}
+                    <small>({{ modulo.subtitulo }})</small>
+                {% endif %}
+                <span>{{ modulo.descripcion }}</span>
+            </span>
+            <span class="tarjeta-modulo__flecha" aria-hidden="true">
+                {% include "gestion/iconos.html" with icono="chevron-derecha" %}
+            </span>
+        </a>
+    {% endfor %}
+</section>
+{% endblock %}

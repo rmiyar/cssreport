@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block titulo %}Inscripción | CSS Report{% endblock %}
+
+{% block contenido %}
+<form class="formulario-inscripcion" method="post" novalidate>
+    {% csrf_token %}
+
+    <section class="encabezado-formulario" aria-labelledby="titulo-inscripcion">
+        <a class="boton-regreso" href="{% url 'gestion:panel' %}" aria-label="Volver a Gestión">
+            {% include "gestion/iconos.html" with icono="flecha-izquierda" %}
+        </a>
+        <div>
+            <h1 id="titulo-inscripcion">Inscripción</h1>
+            <p>Complete la información para realizar una nueva inscripción.</p>
+        </div>
+    </section>
+
+    <section class="panel-formulario" aria-labelledby="titulo-informacion-general">
+        <header class="panel-formulario__cabecera">
+            {% include "gestion/iconos.html" with icono="cuadricula" %}
+            <h2 id="titulo-informacion-general">Información General</h2>
+        </header>
+
+        <div class="panel-formulario__contenido grilla-general">
+            <div class="campo-formulario campo-formulario--fecha">
+                <label for="{{ formulario.fecha_operacion.id_for_label }}">Fecha de Operación:</label>
+                {{ formulario.fecha_operacion }}
+                {{ formulario.fecha_operacion.errors }}
+            </div>
+
+            <fieldset class="campo-formulario campo-formulario--actividad">
+                <legend>Tipo de Actividad:</legend>
+                <div class="opciones-radio">
+                    {% for opcion in formulario.tipo_actividad %}
+                        <label class="opcion-radio">
+                            {{ opcion.tag }}
+                            <span>{{ opcion.choice_label }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+                {{ formulario.tipo_actividad.errors }}
+            </fieldset>
+
+            <div class="campo-formulario campo-formulario--binding">
+                <label for="{{ formulario.letra_binding_case.id_for_label }}">LETRA BINDING CASE</label>
+                {{ formulario.letra_binding_case }}
+                {{ formulario.letra_binding_case.errors }}
+            </div>
+
+            <div class="campo-formulario campo-formulario--sipe">
+                <label for="{{ formulario.numero_sipe.id_for_label }}">No. SIPE:</label>
+                {{ formulario.numero_sipe }}
+                {{ formulario.numero_sipe.errors }}
+            </div>
+
+            <div class="campo-formulario campo-formulario--mainframe">
+                <label for="{{ formulario.numero_mainframe.id_for_label }}">No. MAINFRAME:</label>
+                {{ formulario.numero_mainframe }}
+                {{ formulario.numero_mainframe.errors }}
+            </div>
+
+            <div class="campo-formulario campo-formulario--completo">
+                <label for="{{ formulario.nombre_establecimiento.id_for_label }}">Nombre del establecimiento:</label>
+                {{ formulario.nombre_establecimiento }}
+                {{ formulario.nombre_establecimiento.errors }}
+            </div>
+
+            <div class="campo-formulario campo-formulario--completo">
+                <label for="{{ formulario.empleador_razon_social.id_for_label }}">Empleador o Razón Social</label>
+                {{ formulario.empleador_razon_social }}
+                {{ formulario.empleador_razon_social.errors }}
+            </div>
+
+            <div class="campo-formulario campo-formulario--completo">
+                <label for="{{ formulario.cedula_ruc.id_for_label }}">Cédula / R.U.C.</label>
+                {{ formulario.cedula_ruc }}
+                {{ formulario.cedula_ruc.errors }}
+            </div>
+        </div>
+    </section>
+
+    <section class="panel-formulario" aria-labelledby="titulo-contacto">
+        <header class="panel-formulario__cabecera">
+            {% include "gestion/iconos.html" with icono="usuarios" %}
+            <h2 id="titulo-contacto">Información de Contacto y Representante</h2>
+        </header>
+
+        <div class="panel-formulario__contenido grilla-contacto">
+            <div class="campo-formulario">
+                <label for="{{ formulario.telefono.id_for_label }}">Telefono</label>
+                {{ formulario.telefono }}
+                {{ formulario.telefono.errors }}
+            </div>
+
+            <div class="campo-formulario">
+                <label for="{{ formulario.celular.id_for_label }}">Celular</label>
+                {{ formulario.celular }}
+                {{ formulario.celular.errors }}
+            </div>
+
+            <div class="campo-formulario campo-formulario--completo">
+                <label for="{{ formulario.representante_legal.id_for_label }}">Representante Legal:</label>
+                {{ formulario.representante_legal }}
+                {{ formulario.representante_legal.errors }}
+            </div>
+
+            <div class="campo-formulario campo-formulario--cedula">
+                <label for="{{ formulario.tipo_cedula_representante.id_for_label }}">Cédula Representante Legal:</label>
+                {{ formulario.tipo_cedula_representante }}
+                {{ formulario.cedula_representante }}
+                {{ formulario.tipo_cedula_representante.errors }}
+                {{ formulario.cedula_representante.errors }}
+            </div>
+
+            <div class="campo-formulario campo-formulario--completo">
+                <label for="{{ formulario.direccion_establecimiento.id_for_label }}">Dirección del Establecimiento:</label>
+                {{ formulario.direccion_establecimiento }}
+                {{ formulario.direccion_establecimiento.errors }}
+            </div>
+
+            <div class="campo-formulario campo-formulario--final">
+                <label for="{{ formulario.numero_entrevistados.id_for_label }}">N° ENTREVISTADOS:</label>
+                {{ formulario.numero_entrevistados }}
+                {{ formulario.numero_entrevistados.errors }}
+            </div>
+
+            <div class="campo-formulario campo-formulario--final campo-formulario--salarios">
+                <label for="{{ formulario.monto_salarios.id_for_label }}">MONTO EN SALARIOS B/.</label>
+                {{ formulario.monto_salarios }}
+                {{ formulario.monto_salarios.errors }}
+            </div>
+        </div>
+    </section>
+
+    <div class="acciones-formulario">
+        <button class="boton-formulario boton-formulario--guardar" type="submit">
+            {% include "gestion/iconos.html" with icono="guardar" %}
+            Guardar
+        </button>
+        <a class="boton-formulario boton-formulario--salir" href="{% url 'gestion:panel' %}">
+            {% include "gestion/iconos.html" with icono="prohibido" %}
+            Salir
+        </a>
+    </div>
+</form>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ modulo.nombre }} | CSS Report{% endblock %}
+
+{% block contenido %}
+<section class="detalle-modulo">
+    <a class="enlace-regreso" href="{% url 'gestion:panel' %}">
+        {% include "gestion/iconos.html" with icono="chevron-derecha" %}
+        Volver a Gestión
+    </a>
+
+    <div class="detalle-modulo__cabecera">
+        <span class="tarjeta-modulo__icono tarjeta-modulo__icono--{{ modulo.color }}">
+            {% include "gestion/iconos.html" with icono=modulo.icono %}
+        </span>
+        <div>
+            <p>Módulo {{ modulo.codigo }}</p>
+            <h1>{{ modulo.nombre }}</h1>
+            <span>{{ modulo.descripcion }}</span>
+        </div>
+    </div>
+
+    <div class="panel-vacio">
+        <h2>Módulo listo para implementar</h2>
+        <p>Esta vista confirma la navegación funcional desde el panel de gestión.</p>
+    </div>
+</section>
+{% endblock %}
