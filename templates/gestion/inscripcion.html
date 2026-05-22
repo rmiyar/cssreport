@@ -3,145 +3,410 @@
 {% block titulo %}Inscripción | CSS Report{% endblock %}
 
 {% block contenido %}
-<form class="formulario-inscripcion" method="post" novalidate>
-    {% csrf_token %}
-
-    <section class="encabezado-formulario" aria-labelledby="titulo-inscripcion">
-        <a class="boton-regreso" href="{% url 'gestion:panel' %}" aria-label="Volver a Gestión">
-            {% include "gestion/iconos.html" with icono="flecha-izquierda" %}
-        </a>
-        <div>
-            <h1 id="titulo-inscripcion">Inscripción</h1>
-            <p>Complete la información para realizar una nueva inscripción.</p>
+<div class="pantalla-inscripcion">
+    <section class="encabezado-inscripcion" aria-labelledby="titulo-inscripcion">
+        <div class="encabezado-inscripcion__principal">
+            <a class="boton-regreso" href="{% url 'gestion:panel' %}" aria-label="Volver a Gestión">
+                {% include "gestion/iconos.html" with icono="flecha-izquierda" %}
+            </a>
+            <div>
+                <h1 id="titulo-inscripcion">Inscripción</h1>
+                <p>Consulta de registros y creación de nuevas inscripciones.</p>
+            </div>
         </div>
+
+        <dl class="metricas-inscripcion">
+            <div>
+                <dt>Total</dt>
+                <dd>{{ total_inscripciones }}</dd>
+            </div>
+            <div>
+                <dt>Último registro</dt>
+                <dd>{{ ultima_inscripcion.nombre_establecimiento|default:"Sin registros" }}</dd>
+            </div>
+        </dl>
     </section>
 
-    <section class="panel-formulario" aria-labelledby="titulo-informacion-general">
-        <header class="panel-formulario__cabecera">
-            {% include "gestion/iconos.html" with icono="cuadricula" %}
-            <h2 id="titulo-informacion-general">Información General</h2>
-        </header>
+    <div class="cuerpo-inscripcion">
+        <section class="panel-listado" aria-labelledby="titulo-inscripciones-creadas">
+            <header class="panel-listado__cabecera">
+                <div class="panel-listado__titulo">
+                    {% include "gestion/iconos.html" with icono="archivo" %}
+                    <div>
+                        <h2 id="titulo-inscripciones-creadas">Inscripciones creadas</h2>
+                        <p>Últimos registros guardados en el sistema.</p>
+                    </div>
+                </div>
+                <span class="contador-registros">{{ total_inscripciones }} registro{{ total_inscripciones|pluralize }}</span>
+            </header>
 
-        <div class="panel-formulario__contenido grilla-general">
-            <div class="campo-formulario campo-formulario--fecha">
-                <label for="{{ formulario.fecha_operacion.id_for_label }}">Fecha de Operación:</label>
-                {{ formulario.fecha_operacion }}
-                {{ formulario.fecha_operacion.errors }}
-            </div>
-
-            <fieldset class="campo-formulario campo-formulario--actividad">
-                <legend>Tipo de Actividad:</legend>
-                <div class="opciones-radio">
-                    {% for opcion in formulario.tipo_actividad %}
-                        <label class="opcion-radio">
-                            {{ opcion.tag }}
-                            <span>{{ opcion.choice_label }}</span>
-                        </label>
+            {% if inscripciones %}
+                <div class="lista-inscripciones" aria-label="Listado de inscripciones creadas">
+                    {% for inscripcion in inscripciones %}
+                        <article class="item-inscripcion">
+                            <div>
+                                <strong>{{ inscripcion.nombre_establecimiento }}</strong>
+                                <span>{{ inscripcion.empleador_razon_social }}</span>
+                            </div>
+                            <dl>
+                                <div>
+                                    <dt>R.U.C.</dt>
+                                    <dd>{{ inscripcion.cedula_ruc }}</dd>
+                                </div>
+                                <div>
+                                    <dt>Fecha</dt>
+                                    <dd>{{ inscripcion.fecha_operacion|date:"d/m/Y"|default:"-" }}</dd>
+                                </div>
+                            </dl>
+                            <footer>
+                                <span class="etiqueta-actividad">{{ inscripcion.get_tipo_actividad_display }}</span>
+                                <span>{{ inscripcion.telefono|default:"Sin teléfono" }}</span>
+                            </footer>
+                        </article>
                     {% endfor %}
                 </div>
-                {{ formulario.tipo_actividad.errors }}
-            </fieldset>
 
-            <div class="campo-formulario campo-formulario--binding">
-                <label for="{{ formulario.letra_binding_case.id_for_label }}">LETRA BINDING CASE</label>
-                {{ formulario.letra_binding_case }}
-                {{ formulario.letra_binding_case.errors }}
+                <nav class="paginador-listado" aria-label="Paginación de inscripciones">
+                    {% if inscripciones.has_previous %}
+                        <a href="?pagina={{ inscripciones.previous_page_number }}">Anterior</a>
+                    {% else %}
+                        <span class="paginador-listado__deshabilitado">Anterior</span>
+                    {% endif %}
+
+                    <span class="paginador-listado__estado">
+                        Página {{ inscripciones.number }} de {{ inscripciones.paginator.num_pages }}
+                    </span>
+
+                    {% if inscripciones.has_next %}
+                        <a href="?pagina={{ inscripciones.next_page_number }}">Siguiente</a>
+                    {% else %}
+                        <span class="paginador-listado__deshabilitado">Siguiente</span>
+                    {% endif %}
+                </nav>
+            {% else %}
+                <div class="estado-vacio">
+                    <strong>No hay inscripciones creadas.</strong>
+                    <span>Cuando guarde una inscripción, aparecerá en este listado.</span>
+                </div>
+            {% endif %}
+        </section>
+
+        <form class="formulario-inscripcion" method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="cabecera-seccion-formulario">
+                <div>
+                    <span>Formulario</span>
+                    <h2>Nueva inscripción</h2>
+                </div>
+                <p>Complete la información requerida para guardar una nueva inscripción.</p>
             </div>
 
-            <div class="campo-formulario campo-formulario--sipe">
-                <label for="{{ formulario.numero_sipe.id_for_label }}">No. SIPE:</label>
-                {{ formulario.numero_sipe }}
-                {{ formulario.numero_sipe.errors }}
+            <section class="panel-formulario" aria-labelledby="titulo-informacion-general">
+                <header class="panel-formulario__cabecera">
+                    {% include "gestion/iconos.html" with icono="cuadricula" %}
+                    <h2 id="titulo-informacion-general">Información General</h2>
+                </header>
+
+                <div class="panel-formulario__contenido grilla-general">
+                    <div class="campo-formulario campo-formulario--fecha">
+                        <label for="{{ formulario.fecha_operacion.id_for_label }}">Fecha de Operación:</label>
+                        {{ formulario.fecha_operacion }}
+                        {{ formulario.fecha_operacion.errors }}
+                    </div>
+
+                    <fieldset class="campo-formulario campo-formulario--actividad">
+                        <legend>Tipo de Actividad:</legend>
+                        <div class="opciones-radio">
+                            {% for opcion in formulario.tipo_actividad %}
+                                <label class="opcion-radio">
+                                    {{ opcion.tag }}
+                                    <span>{{ opcion.choice_label }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                        {{ formulario.tipo_actividad.errors }}
+                    </fieldset>
+
+                    <div class="campo-formulario campo-formulario--binding">
+                        <label for="{{ formulario.letra_binding_case.id_for_label }}">Letra Binding Case</label>
+                        {{ formulario.letra_binding_case }}
+                        {{ formulario.letra_binding_case.errors }}
+                    </div>
+
+                    <div class="campo-formulario campo-formulario--sipe">
+                        <label for="{{ formulario.numero_sipe.id_for_label }}">No. SIPE:</label>
+                        {{ formulario.numero_sipe }}
+                        {{ formulario.numero_sipe.errors }}
+                    </div>
+
+                    <div class="campo-formulario campo-formulario--mainframe">
+                        <label for="{{ formulario.numero_mainframe.id_for_label }}">No. MAINFRAME:</label>
+                        {{ formulario.numero_mainframe }}
+                        {{ formulario.numero_mainframe.errors }}
+                    </div>
+
+                    <div class="campo-formulario campo-formulario--completo">
+                        <label for="{{ formulario.nombre_establecimiento.id_for_label }}">Nombre del establecimiento:</label>
+                        {{ formulario.nombre_establecimiento }}
+                        {{ formulario.nombre_establecimiento.errors }}
+                    </div>
+
+                    <div class="campo-formulario campo-formulario--completo">
+                        <label for="{{ formulario.empleador_razon_social.id_for_label }}">Empleador o Razón Social</label>
+                        {{ formulario.empleador_razon_social }}
+                        {{ formulario.empleador_razon_social.errors }}
+                    </div>
+
+                    <div class="campo-formulario campo-formulario--completo">
+                        <label for="{{ formulario.cedula_ruc.id_for_label }}">Cédula / R.U.C.</label>
+                        {{ formulario.cedula_ruc }}
+                        {{ formulario.cedula_ruc.errors }}
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel-formulario" aria-labelledby="titulo-contacto">
+                <header class="panel-formulario__cabecera">
+                    {% include "gestion/iconos.html" with icono="usuarios" %}
+                    <h2 id="titulo-contacto">Información de Contacto y Representante</h2>
+                </header>
+
+                <div class="panel-formulario__contenido grilla-contacto">
+                    <div class="campo-formulario">
+                        <label for="{{ formulario.telefono.id_for_label }}">Telefono</label>
+                        {{ formulario.telefono }}
+                        {{ formulario.telefono.errors }}
+                    </div>
+
+                    <div class="campo-formulario">
+                        <label for="{{ formulario.celular.id_for_label }}">Celular</label>
+                        {{ formulario.celular }}
+                        {{ formulario.celular.errors }}
+                    </div>
+
+                    <div class="campo-formulario campo-formulario--completo">
+                        <label for="{{ formulario.representante_legal.id_for_label }}">Representante Legal:</label>
+                        {{ formulario.representante_legal }}
+                        {{ formulario.representante_legal.errors }}
+                    </div>
+
+                    <div class="campo-formulario campo-formulario--cedula">
+                        <label for="{{ formulario.tipo_cedula_representante.id_for_label }}">Cédula Representante Legal:</label>
+                        {{ formulario.tipo_cedula_representante }}
+                        {{ formulario.cedula_representante }}
+                        {{ formulario.tipo_cedula_representante.errors }}
+                        {{ formulario.cedula_representante.errors }}
+                    </div>
+
+                    <div class="campo-formulario campo-formulario--completo">
+                        <label for="{{ formulario.direccion_establecimiento.id_for_label }}">Dirección del Establecimiento:</label>
+                        {{ formulario.direccion_establecimiento }}
+                        {{ formulario.direccion_establecimiento.errors }}
+                    </div>
+
+                    <div class="campo-formulario campo-formulario--final">
+                        <label for="{{ formulario.numero_entrevistados.id_for_label }}">N° ENTREVISTADOS:</label>
+                        {{ formulario.numero_entrevistados }}
+                        {{ formulario.numero_entrevistados.errors }}
+                    </div>
+
+                    <div class="campo-formulario campo-formulario--final campo-formulario--salarios">
+                        <label for="{{ formulario.monto_salarios.id_for_label }}">MONTO EN SALARIOS B/.</label>
+                        {{ formulario.monto_salarios }}
+                        {{ formulario.monto_salarios.errors }}
+                    </div>
+                </div>
+            </section>
+
+            <div class="acciones-formulario">
+                <button class="boton-formulario boton-formulario--guardar" type="submit">
+                    {% include "gestion/iconos.html" with icono="guardar" %}
+                    Guardar
+                </button>
+                <a class="boton-formulario boton-formulario--salir" href="{% url 'gestion:panel' %}">
+                    {% include "gestion/iconos.html" with icono="prohibido" %}
+                    Salir
+                </a>
             </div>
 
-            <div class="campo-formulario campo-formulario--mainframe">
-                <label for="{{ formulario.numero_mainframe.id_for_label }}">No. MAINFRAME:</label>
-                {{ formulario.numero_mainframe }}
-                {{ formulario.numero_mainframe.errors }}
-            </div>
+            <section class="panel-acciones-modulo" aria-labelledby="titulo-acciones-modulo">
+                <header class="panel-acciones-modulo__cabecera">
+                    {% include "gestion/iconos.html" with icono="cuadricula" %}
+                    <div>
+                        <h2 id="titulo-acciones-modulo">Acciones del módulo</h2>
+                        <p>Herramientas complementarias para la gestión de inscripciones.</p>
+                    </div>
+                </header>
 
-            <div class="campo-formulario campo-formulario--completo">
-                <label for="{{ formulario.nombre_establecimiento.id_for_label }}">Nombre del establecimiento:</label>
-                {{ formulario.nombre_establecimiento }}
-                {{ formulario.nombre_establecimiento.errors }}
-            </div>
+                <div class="grid-acciones-modulo">
+                    <button type="button" class="boton-accion-modulo" data-accion="abrir-reporte-detalle-empleados">
+                        {% include "gestion/iconos.html" with icono="impresora" %}
+                        <span>Det. Empl.</span>
+                    </button>
+                    <button type="button" class="boton-accion-modulo">
+                        {% include "gestion/iconos.html" with icono="carpeta" %}
+                        <span>Avances</span>
+                    </button>
+                    <button type="button" class="boton-accion-modulo">
+                        {% include "gestion/iconos.html" with icono="acta" %}
+                        <span>Acta</span>
+                    </button>
+                    <button type="button" class="boton-accion-modulo">
+                        {% include "gestion/iconos.html" with icono="descarga" %}
+                        <span>Citación</span>
+                    </button>
+                    <button type="button" class="boton-accion-modulo">
+                        {% include "gestion/iconos.html" with icono="planilla" %}
+                        <span>Planilla</span>
+                    </button>
+                    <button type="button" class="boton-accion-modulo">
+                        {% include "gestion/iconos.html" with icono="calendario" %}
+                        <span>Preliminar</span>
+                    </button>
+                    <button type="button" class="boton-accion-modulo">
+                        {% include "gestion/iconos.html" with icono="grafico" %}
+                        <span>Operativos</span>
+                    </button>
+                    <button type="button" class="boton-accion-modulo">
+                        {% include "gestion/iconos.html" with icono="movimientos" %}
+                        <span>Movimientos</span>
+                    </button>
+                    <button type="button" class="boton-accion-modulo">
+                        {% include "gestion/iconos.html" with icono="inicio" %}
+                        <span>Maestro</span>
+                    </button>
+                    <button type="button" class="boton-accion-modulo">
+                        {% include "gestion/iconos.html" with icono="editar" %}
+                        <span>Editar</span>
+                    </button>
+                    <button type="button" class="boton-accion-modulo">
+                        {% include "gestion/iconos.html" with icono="expediente" %}
+                        <span>Expedientes</span>
+                    </button>
+                    <button type="button" class="boton-accion-modulo">
+                        {% include "gestion/iconos.html" with icono="info" %}
+                        <span>Cálculo Días</span>
+                    </button>
+                    <button type="button" class="boton-accion-modulo">
+                        {% include "gestion/iconos.html" with icono="descarga" %}
+                        <span>Inf. Inscripción</span>
+                    </button>
+                    <button type="button" class="boton-accion-modulo">
+                        {% include "gestion/iconos.html" with icono="reactivar" %}
+                        <span>Reactivación</span>
+                    </button>
+                    <button type="button" class="boton-accion-modulo">
+                        {% include "gestion/iconos.html" with icono="advertencia" %}
+                        <span>Inact./Otros</span>
+                    </button>
+                </div>
+            </section>
+        </form>
+    </div>
+</div>
 
-            <div class="campo-formulario campo-formulario--completo">
-                <label for="{{ formulario.empleador_razon_social.id_for_label }}">Empleador o Razón Social</label>
-                {{ formulario.empleador_razon_social }}
-                {{ formulario.empleador_razon_social.errors }}
+<div class="modal-reporte" data-reporte-detalle-empleados aria-hidden="true">
+    <div class="modal-reporte__panel" role="dialog" aria-modal="true" aria-labelledby="titulo-reporte-detalle">
+        <header class="modal-reporte__barra">
+            <div>
+                <span>Vista previa</span>
+                <h2 id="titulo-reporte-detalle">Detalle de empleados</h2>
             </div>
-
-            <div class="campo-formulario campo-formulario--completo">
-                <label for="{{ formulario.cedula_ruc.id_for_label }}">Cédula / R.U.C.</label>
-                {{ formulario.cedula_ruc }}
-                {{ formulario.cedula_ruc.errors }}
+            <div class="modal-reporte__acciones">
+                <button type="button" class="boton-modal boton-modal--primario" data-accion="imprimir-reporte">
+                    {% include "gestion/iconos.html" with icono="impresora" %}
+                    Imprimir
+                </button>
+                <button type="button" class="boton-modal" data-accion="cerrar-reporte">
+                    Cerrar
+                </button>
             </div>
-        </div>
-    </section>
-
-    <section class="panel-formulario" aria-labelledby="titulo-contacto">
-        <header class="panel-formulario__cabecera">
-            {% include "gestion/iconos.html" with icono="usuarios" %}
-            <h2 id="titulo-contacto">Información de Contacto y Representante</h2>
         </header>
 
-        <div class="panel-formulario__contenido grilla-contacto">
-            <div class="campo-formulario">
-                <label for="{{ formulario.telefono.id_for_label }}">Telefono</label>
-                {{ formulario.telefono }}
-                {{ formulario.telefono.errors }}
-            </div>
+        <div class="visor-reporte">
+            <article class="hoja-reporte" data-hoja-reporte>
+                <header class="reporte-encabezado">
+                    <div class="reporte-sello">C.S.S.</div>
+                    <div>
+                        <strong>CAJA DE SEGURO SOCIAL</strong>
+                        <span>DIRECCIÓN NACIONAL DE INGRESOS</span>
+                        <span>DEPARTAMENTO DE INVESTIGACIÓN DE INGRESOS</span>
+                        <h3>DETALLE DE EMPLEADOS</h3>
+                    </div>
+                </header>
 
-            <div class="campo-formulario">
-                <label for="{{ formulario.celular.id_for_label }}">Celular</label>
-                {{ formulario.celular }}
-                {{ formulario.celular.errors }}
-            </div>
+                <section class="reporte-datos">
+                    <p><strong>HORA:</strong> <span></span></p>
+                    <p><strong>FECHA:</strong> <span data-reporte-fecha></span></p>
+                    <p><strong>N° DE EMPLEADOR:</strong> <span data-reporte-sipe></span></p>
+                    <p><strong>RAZÓN SOCIAL:</strong> <span data-reporte-razon></span></p>
+                    <p><strong>NOMBRE COMERCIAL:</strong> <span data-reporte-establecimiento></span></p>
+                    <p><strong>DIRECCIÓN DEL EMPLEADOR:</strong> <span data-reporte-direccion></span></p>
+                    <p><strong>NOMBRE DEL REPRESENTANTE LEGAL:</strong> <span data-reporte-representante></span></p>
+                    <p><strong>C.I.P. O PASAPORTE DEL REP. LEGAL:</strong> <span data-reporte-cedula-representante></span></p>
+                </section>
 
-            <div class="campo-formulario campo-formulario--completo">
-                <label for="{{ formulario.representante_legal.id_for_label }}">Representante Legal:</label>
-                {{ formulario.representante_legal }}
-                {{ formulario.representante_legal.errors }}
-            </div>
+                <table class="tabla-reporte-empleados">
+                    <thead>
+                        <tr>
+                            <th>Cant.</th>
+                            <th>N° de cédula o pasaporte</th>
+                            <th>Nombre completo del empleado</th>
+                            <th>N° de teléfono</th>
+                            <th>Cargo</th>
+                            <th>Sueldo</th>
+                            <th>Fecha de ingreso</th>
+                            <th>Firma del empleado</th>
+                            <th>Observación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fila in "1234567890" %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
 
-            <div class="campo-formulario campo-formulario--cedula">
-                <label for="{{ formulario.tipo_cedula_representante.id_for_label }}">Cédula Representante Legal:</label>
-                {{ formulario.tipo_cedula_representante }}
-                {{ formulario.cedula_representante }}
-                {{ formulario.tipo_cedula_representante.errors }}
-                {{ formulario.cedula_representante.errors }}
-            </div>
+                <section class="reporte-observacion">
+                    <strong>Observación:</strong>
+                    <span></span>
+                </section>
 
-            <div class="campo-formulario campo-formulario--completo">
-                <label for="{{ formulario.direccion_establecimiento.id_for_label }}">Dirección del Establecimiento:</label>
-                {{ formulario.direccion_establecimiento }}
-                {{ formulario.direccion_establecimiento.errors }}
-            </div>
+                <p class="reporte-declaracion">
+                    Declaran los firmantes que toda la información y los datos suministrados en el presente documento son veraces y exactos. La información consignada podrá ser verificada por la institución para los fines correspondientes.
+                </p>
 
-            <div class="campo-formulario campo-formulario--final">
-                <label for="{{ formulario.numero_entrevistados.id_for_label }}">N° ENTREVISTADOS:</label>
-                {{ formulario.numero_entrevistados }}
-                {{ formulario.numero_entrevistados.errors }}
-            </div>
-
-            <div class="campo-formulario campo-formulario--final campo-formulario--salarios">
-                <label for="{{ formulario.monto_salarios.id_for_label }}">MONTO EN SALARIOS B/.</label>
-                {{ formulario.monto_salarios }}
-                {{ formulario.monto_salarios.errors }}
-            </div>
+                <footer class="reporte-firmas">
+                    <div>
+                        <span></span>
+                        <p>Nombre del investigador de ingresos</p>
+                    </div>
+                    <div>
+                        <span></span>
+                        <p>Nombre del supervisor o jefe de sección</p>
+                    </div>
+                    <div>
+                        <span></span>
+                        <p>N° y firma del investigador de ingresos</p>
+                    </div>
+                    <div>
+                        <span></span>
+                        <p>Firma del supervisor o jefe de sección</p>
+                    </div>
+                </footer>
+            </article>
         </div>
-    </section>
-
-    <div class="acciones-formulario">
-        <button class="boton-formulario boton-formulario--guardar" type="submit">
-            {% include "gestion/iconos.html" with icono="guardar" %}
-            Guardar
-        </button>
-        <a class="boton-formulario boton-formulario--salir" href="{% url 'gestion:panel' %}">
-            {% include "gestion/iconos.html" with icono="prohibido" %}
-            Salir
-        </a>
     </div>
-</form>
+</div>
 {% endblock %}

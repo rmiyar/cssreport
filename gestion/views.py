@@ -1,10 +1,12 @@
 from django.http import Http404
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.shortcuts import redirect
 from django.shortcuts import render
 
 from .forms import FormularioInscripcion
 from .modulos import MODULOS_GESTION
+from .models import Inscripcion
 
 
 def panel_gestion(request):
@@ -43,6 +45,10 @@ def detalle_modulo(request, slug):
 
 def formulario_inscripcion(request, modulo):
     formulario = FormularioInscripcion(request.POST or None)
+    paginador = Paginator(Inscripcion.objects.all(), 5)
+    pagina_inscripciones = paginador.get_page(request.GET.get("pagina"))
+    total_inscripciones = Inscripcion.objects.count()
+    ultima_inscripcion = Inscripcion.objects.first()
 
     if request.method == "POST" and formulario.is_valid():
         formulario.save()
@@ -51,6 +57,9 @@ def formulario_inscripcion(request, modulo):
 
     contexto = {
         "formulario": formulario,
+        "inscripciones": pagina_inscripciones,
+        "total_inscripciones": total_inscripciones,
+        "ultima_inscripcion": ultima_inscripcion,
         "modulo": modulo,
         "seccion_activa": "gestion",
         "mostrar_barra_lateral": False,
