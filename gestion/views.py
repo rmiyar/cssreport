@@ -1,6 +1,7 @@
-from django.http import Http404
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
 
@@ -44,7 +45,16 @@ def detalle_modulo(request, slug):
 
 
 def formulario_inscripcion(request, modulo):
-    formulario = FormularioInscripcion(request.POST or None)
+    inscripcion_id = request.GET.get("editar")
+    inscripcion_en_edicion = None
+
+    if inscripcion_id:
+        inscripcion_en_edicion = get_object_or_404(Inscripcion, pk=inscripcion_id)
+
+    formulario = FormularioInscripcion(
+        request.POST or None,
+        instance=inscripcion_en_edicion,
+    )
     paginador = Paginator(Inscripcion.objects.all(), 5)
     pagina_inscripciones = paginador.get_page(request.GET.get("pagina"))
     total_inscripciones = Inscripcion.objects.count()
@@ -52,11 +62,15 @@ def formulario_inscripcion(request, modulo):
 
     if request.method == "POST" and formulario.is_valid():
         formulario.save()
-        messages.success(request, "La inscripción fue validada correctamente.")
+        if inscripcion_en_edicion:
+            messages.success(request, "La inscripción fue actualizada correctamente.")
+        else:
+            messages.success(request, "La inscripción fue validada correctamente.")
         return redirect("gestion:detalle_modulo", slug=modulo["slug"])
 
     contexto = {
         "formulario": formulario,
+        "inscripcion_en_edicion": inscripcion_en_edicion,
         "inscripciones": pagina_inscripciones,
         "total_inscripciones": total_inscripciones,
         "ultima_inscripcion": ultima_inscripcion,

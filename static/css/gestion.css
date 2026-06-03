@@ -582,11 +582,18 @@ svg {
     border: 1px solid #e0e7f2;
     border-radius: 8px;
     background: #ffffff;
+    text-decoration: none;
+    cursor: pointer;
 }
 
 .item-inscripcion:hover {
     border-color: #c8d8ef;
     background: #f9fbff;
+}
+
+.item-inscripcion--activa {
+    border-color: var(--azul);
+    background: #eef5ff;
 }
 
 .item-inscripcion > div {
@@ -1134,6 +1141,172 @@ svg {
     background: #1d70e8;
 }
 
+.modal-reporte__panel--boleta {
+    width: min(1180px, 100%);
+    background: #f5f7fb;
+}
+
+.pantalla-boleta-citacion {
+    min-height: min(700px, calc(100vh - 136px));
+    display: grid;
+    grid-template-columns: 290px minmax(0, 1fr);
+    gap: 18px;
+    overflow: auto;
+    padding: 18px;
+    background: #f5f7fb;
+}
+
+.boleta-citacion__filtro {
+    display: grid;
+    padding: 14px;
+    border: 1px solid var(--borde-fuerte);
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 12px 28px rgba(16, 25, 54, 0.06);
+}
+
+.boleta-citacion__lista {
+    min-height: 420px;
+    padding: 14px;
+    border: 1px solid var(--borde);
+    border-radius: 7px;
+    background: #f9fbff;
+    color: var(--texto);
+    font-size: 0.92rem;
+    font-weight: 700;
+}
+
+.boleta-citacion__formulario {
+    align-self: start;
+    display: grid;
+    gap: 18px;
+    padding: 18px;
+    border: 1px solid var(--borde-fuerte);
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 12px 28px rgba(16, 25, 54, 0.06);
+}
+
+.boleta-citacion__titulo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 190px 170px;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--borde);
+}
+
+.boleta-citacion__titulo h3 {
+    margin: 0;
+    color: var(--texto);
+    background: transparent;
+    font-size: 1rem;
+    font-weight: 900;
+}
+
+.boleta-citacion__titulo label {
+    display: grid;
+    gap: 6px;
+}
+
+.boleta-citacion__titulo span,
+.boleta-citacion__campo > span:not(.sr-only) {
+    align-self: center;
+    padding: 0;
+    color: #46556f;
+    background: transparent;
+    font-size: 0.8rem;
+    font-weight: 800;
+    line-height: 1.25;
+}
+
+.boleta-citacion__titulo input,
+.boleta-citacion__campo input,
+.boleta-citacion__campo select {
+    min-height: 40px;
+    width: 100%;
+    border: 1px solid #d9e3f2;
+    border-radius: 6px;
+    background: #fbfdff;
+    color: var(--texto);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.boleta-citacion__titulo input {
+    width: 100%;
+}
+
+.boleta-citacion__grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: start;
+    gap: 14px;
+}
+
+.boleta-citacion__campo {
+    min-width: 0;
+    display: grid;
+    gap: 7px;
+}
+
+.boleta-citacion__campo--establecimiento,
+.boleta-citacion__campo--razon,
+.boleta-citacion__campo--representante,
+.boleta-citacion__campo--domicilio,
+.boleta-citacion__campo--agente {
+    grid-column: span 2;
+}
+
+.boleta-citacion__campo--direccion {
+    grid-column: 1 / -1;
+}
+
+.boleta-citacion__campo--sector {
+    grid-column: span 2;
+    grid-template-columns: 110px minmax(0, 1fr);
+    align-items: end;
+}
+
+.boleta-citacion__acciones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 2px;
+}
+
+.boton-boleta-citacion {
+    min-width: 150px;
+    min-height: 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 0 16px;
+    border: 1px solid #d9e3f2;
+    border-radius: 7px;
+    color: var(--texto);
+    background: #ffffff;
+    font: inherit;
+    font-size: 0.86rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.boton-boleta-citacion svg {
+    width: 20px;
+    height: 20px;
+}
+
+.boton-boleta-citacion--primario {
+    border-color: #1d70e8;
+    color: #ffffff;
+    background: #1d70e8;
+    box-shadow: 0 10px 24px rgba(29, 112, 232, 0.18);
+}
+
 .visor-reporte {
     overflow: auto;
     padding: 22px;
@@ -1279,6 +1452,264 @@ svg {
     margin: 0;
     font-size: 0.7rem;
     text-transform: uppercase;
+}
+
+.hoja-avances {
+    width: min(980px, 100%);
+    min-height: 1120px;
+    padding: 24px 28px;
+    border: 2px solid #111111;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.avances-encabezado {
+    display: grid;
+    grid-template-columns: 120px 1fr 120px;
+    align-items: start;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.avances-encabezado strong,
+.avances-encabezado span {
+    display: block;
+}
+
+.avances-encabezado h3 {
+    margin: 16px 0 0;
+    font-size: 1rem;
+    font-style: italic;
+    text-decoration: underline;
+}
+
+.avances-datos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 44px;
+    margin-bottom: 10px;
+}
+
+.avances-datos p {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 14px;
+    margin: 0;
+}
+
+.avances-datos p:nth-child(3),
+.avances-datos p:nth-child(4) {
+    grid-column: span 1;
+}
+
+.avances-datos span {
+    min-height: 19px;
+    border-bottom: 1px solid #111111;
+}
+
+.tabla-avances {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 0.72rem;
+}
+
+.tabla-avances caption {
+    caption-side: top;
+    padding: 5px 0 3px;
+    border: 1px solid #111111;
+    border-bottom: 0;
+    font-size: 0.82rem;
+    font-weight: 800;
+    text-align: center;
+}
+
+.tabla-avances th,
+.tabla-avances td {
+    border: 1px solid #111111;
+    padding: 5px;
+    vertical-align: middle;
+}
+
+.tabla-avances th {
+    height: 56px;
+    text-align: center;
+}
+
+.tabla-avances td {
+    height: 42px;
+}
+
+.tabla-avances th:nth-child(1) { width: 11%; }
+.tabla-avances th:nth-child(2) { width: 41%; }
+.tabla-avances th:nth-child(3) { width: 21%; }
+.tabla-avances th:nth-child(4) { width: 12%; }
+.tabla-avances th:nth-child(5) { width: 15%; }
+
+.avances-pie {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+    margin: 16px 0 14px;
+}
+
+.avances-pie label {
+    display: grid;
+    grid-template-columns: max-content 160px;
+    align-items: center;
+    gap: 12px;
+}
+
+.avances-pie label:last-child {
+    justify-content: end;
+}
+
+.avances-pie span {
+    min-height: 30px;
+    border: 1px solid #111111;
+}
+
+.avances-notas {
+    display: grid;
+    gap: 8px;
+    padding: 8px 10px 4px;
+    border: 1px solid #111111;
+    font-size: 0.68rem;
+    font-style: italic;
+    line-height: 1.35;
+}
+
+.avances-notas p {
+    margin: 0;
+}
+
+.hoja-citacion {
+    width: min(840px, 100%);
+    min-height: 1088px;
+    padding: 34px 42px 40px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1.45;
+}
+
+.citacion-encabezado {
+    display: grid;
+    grid-template-columns: 110px 1fr 110px;
+    align-items: start;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.citacion-encabezado strong,
+.citacion-encabezado span {
+    display: block;
+}
+
+.citacion-encabezado h3 {
+    margin: 18px 0 0;
+    font-size: 0.86rem;
+    font-weight: 800;
+}
+
+.citacion-fecha {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0 0 38px;
+}
+
+.citacion-fecha p {
+    min-width: 420px;
+    margin: 0;
+    padding-bottom: 3px;
+    border-bottom: 1px solid #111111;
+    text-align: center;
+}
+
+.citacion-fecha span {
+    display: inline-block;
+    min-width: 72px;
+}
+
+.citacion-datos {
+    display: grid;
+    gap: 7px;
+    margin-bottom: 18px;
+}
+
+.citacion-datos p {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 8px;
+    margin: 0;
+}
+
+.citacion-datos span,
+.citacion-firmas span {
+    min-height: 19px;
+    border-bottom: 1px solid #111111;
+}
+
+.citacion-parrafo {
+    margin: 18px 0;
+    text-align: justify;
+}
+
+.citacion-presentacion {
+    display: grid;
+    grid-template-columns: max-content 58px 160px 76px max-content 160px;
+    align-items: center;
+    gap: 0;
+    margin: 18px 0 26px;
+}
+
+.citacion-presentacion strong {
+    padding-right: 12px;
+}
+
+.citacion-presentacion span {
+    min-height: 28px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #111111;
+}
+
+.citacion-presentacion strong:nth-of-type(2) {
+    padding: 0 16px 0 34px;
+}
+
+.citacion-ley {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 36px;
+    padding: 16px;
+    border: 2px solid #111111;
+    font-size: 0.68rem;
+    line-height: 1.5;
+    text-align: justify;
+}
+
+.citacion-ley p {
+    margin: 0;
+}
+
+.citacion-firmas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 70px;
+}
+
+.citacion-firmas div {
+    display: grid;
+    gap: 4px;
+}
+
+.citacion-firmas p {
+    margin: 0 0 18px;
+    font-size: 0.66rem;
 }
 
 .sr-only {
@@ -1470,6 +1901,49 @@ svg {
         flex-direction: column;
     }
 
+    .pantalla-boleta-citacion {
+        grid-template-columns: 1fr;
+    }
+
+    .boleta-citacion__lista {
+        min-height: 160px;
+    }
+
+    .boleta-citacion__titulo,
+    .boleta-citacion__grid {
+        grid-template-columns: 150px minmax(0, 1fr);
+    }
+
+    .boleta-citacion__titulo h3,
+    .boleta-citacion__campo--sipe > span,
+    .boleta-citacion__campo--establecimiento > span,
+    .boleta-citacion__campo--razon > span,
+    .boleta-citacion__campo--ruc > span,
+    .boleta-citacion__campo--direccion > span,
+    .boleta-citacion__campo--representante > span,
+    .boleta-citacion__campo--cedula > span,
+    .boleta-citacion__campo--domicilio > span,
+    .boleta-citacion__campo--fecha > span,
+    .boleta-citacion__campo--hora > span,
+    .boleta-citacion__campo--agente > span,
+    .boleta-citacion__campo--sipe > input,
+    .boleta-citacion__campo--establecimiento > input,
+    .boleta-citacion__campo--razon > input,
+    .boleta-citacion__campo--ruc > input,
+    .boleta-citacion__campo--sector > select,
+    .boleta-citacion__campo--sector > input,
+    .boleta-citacion__campo--direccion > input,
+    .boleta-citacion__campo--representante > input,
+    .boleta-citacion__campo--cedula > input,
+    .boleta-citacion__campo--domicilio > input,
+    .boleta-citacion__campo--fecha > input,
+    .boleta-citacion__campo--hora > input,
+    .boleta-citacion__campo--agente > input {
+        grid-column: auto;
+        justify-self: stretch;
+        width: 100%;
+    }
+
     .tarjeta-modulo {
         min-height: 138px;
         grid-template-columns: 74px minmax(0, 1fr) 24px;
@@ -1490,6 +1964,11 @@ svg {
 @media print {
     @page {
         size: landscape;
+        margin: 8mm;
+    }
+
+    @page citacion {
+        size: portrait;
         margin: 8mm;
     }
 
@@ -1530,6 +2009,10 @@ svg {
         background: #ffffff !important;
     }
 
+    .modal-reporte:not(.abierto) {
+        display: none !important;
+    }
+
     .modal-reporte__barra {
         display: none !important;
     }
@@ -1564,5 +2047,30 @@ svg {
 
     .reporte-declaracion {
         margin-bottom: 24px;
+    }
+
+    .hoja-citacion {
+        page: citacion;
+        width: 100% !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        font-size: 0.72rem;
+    }
+
+    .hoja-avances {
+        page: citacion;
+        width: 100% !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        font-size: 0.68rem;
+    }
+
+    .tabla-avances td {
+        height: 36px;
+    }
+
+    .citacion-ley {
+        margin-bottom: 28px;
     }
 }

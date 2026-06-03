@@ -43,7 +43,7 @@
             {% if inscripciones %}
                 <div class="lista-inscripciones" aria-label="Listado de inscripciones creadas">
                     {% for inscripcion in inscripciones %}
-                        <article class="item-inscripcion">
+                        <a class="item-inscripcion{% if inscripcion_en_edicion.pk == inscripcion.pk %} item-inscripcion--activa{% endif %}" href="?editar={{ inscripcion.pk }}#formulario-inscripcion">
                             <div>
                                 <strong>{{ inscripcion.nombre_establecimiento }}</strong>
                                 <span>{{ inscripcion.empleador_razon_social }}</span>
@@ -62,7 +62,7 @@
                                 <span class="etiqueta-actividad">{{ inscripcion.get_tipo_actividad_display }}</span>
                                 <span>{{ inscripcion.telefono|default:"Sin teléfono" }}</span>
                             </footer>
-                        </article>
+                        </a>
                     {% endfor %}
                 </div>
 
@@ -91,15 +91,21 @@
             {% endif %}
         </section>
 
-        <form class="formulario-inscripcion" method="post" novalidate>
+        <form id="formulario-inscripcion" class="formulario-inscripcion" method="post" novalidate>
             {% csrf_token %}
 
             <div class="cabecera-seccion-formulario">
                 <div>
                     <span>Formulario</span>
-                    <h2>Nueva inscripción</h2>
+                    <h2>{% if inscripcion_en_edicion %}Editar inscripción{% else %}Nueva inscripción{% endif %}</h2>
                 </div>
-                <p>Complete la información requerida para guardar una nueva inscripción.</p>
+                <p>
+                    {% if inscripcion_en_edicion %}
+                        Actualice la información requerida para guardar los cambios.
+                    {% else %}
+                        Complete la información requerida para guardar una nueva inscripción.
+                    {% endif %}
+                </p>
             </div>
 
             <section class="panel-formulario" aria-labelledby="titulo-informacion-general">
@@ -222,8 +228,14 @@
             <div class="acciones-formulario">
                 <button class="boton-formulario boton-formulario--guardar" type="submit">
                     {% include "gestion/iconos.html" with icono="guardar" %}
-                    Guardar
+                    {% if inscripcion_en_edicion %}Actualizar{% else %}Guardar{% endif %}
                 </button>
+                {% if inscripcion_en_edicion %}
+                    <a class="boton-formulario boton-formulario--salir" href="{% url 'gestion:detalle_modulo' slug=modulo.slug %}#formulario-inscripcion">
+                        {% include "gestion/iconos.html" with icono="prohibido" %}
+                        Cancelar
+                    </a>
+                {% endif %}
                 <a class="boton-formulario boton-formulario--salir" href="{% url 'gestion:panel' %}">
                     {% include "gestion/iconos.html" with icono="prohibido" %}
                     Salir
@@ -244,7 +256,7 @@
                         {% include "gestion/iconos.html" with icono="impresora" %}
                         <span>Det. Empl.</span>
                     </button>
-                    <button type="button" class="boton-accion-modulo">
+                    <button type="button" class="boton-accion-modulo" data-accion="abrir-reporte-avances">
                         {% include "gestion/iconos.html" with icono="carpeta" %}
                         <span>Avances</span>
                     </button>
@@ -252,7 +264,7 @@
                         {% include "gestion/iconos.html" with icono="acta" %}
                         <span>Acta</span>
                     </button>
-                    <button type="button" class="boton-accion-modulo">
+                    <button type="button" class="boton-accion-modulo" data-accion="abrir-reporte-citacion">
                         {% include "gestion/iconos.html" with icono="descarga" %}
                         <span>Citación</span>
                     </button>
@@ -303,6 +315,109 @@
                 </div>
             </section>
         </form>
+    </div>
+</div>
+
+<div class="modal-reporte" data-modulo-citacion aria-hidden="true">
+    <div class="modal-reporte__panel modal-reporte__panel--boleta" role="dialog" aria-modal="true" aria-labelledby="titulo-modulo-citacion">
+        <header class="modal-reporte__barra">
+            <div>
+                <span>Módulo</span>
+                <h2 id="titulo-modulo-citacion">Boletas de citación</h2>
+            </div>
+            <div class="modal-reporte__acciones">
+                <button type="button" class="boton-modal" data-accion="cerrar-reporte">
+                    Cerrar
+                </button>
+            </div>
+        </header>
+
+        <div class="pantalla-boleta-citacion">
+            <aside class="boleta-citacion__filtro" aria-label="Registros de citación">
+                <div class="boleta-citacion__lista" data-boleta-lista-establecimiento></div>
+            </aside>
+
+            <section class="boleta-citacion__formulario" aria-labelledby="titulo-boleta-citacion">
+                <header class="boleta-citacion__titulo">
+                    <h3 id="titulo-boleta-citacion">Módulo de boletas de citación</h3>
+                    <label>
+                        <span>Fecha de Citación:</span>
+                        <input type="date" data-boleta-campo="fecha_creacion">
+                    </label>
+                    <label>
+                        <span>Número:</span>
+                        <input type="text" data-boleta-campo="numero">
+                    </label>
+                </header>
+
+                <div class="boleta-citacion__grid">
+                    <label class="boleta-citacion__campo boleta-citacion__campo--sipe">
+                        <span>No. SIPE:</span>
+                        <input type="text" data-boleta-campo="sipe">
+                    </label>
+                    <label class="boleta-citacion__campo boleta-citacion__campo--establecimiento">
+                        <span>Nombre del establecimiento:</span>
+                        <input type="text" data-boleta-campo="establecimiento">
+                    </label>
+                    <label class="boleta-citacion__campo boleta-citacion__campo--razon">
+                        <span>Empleador o Razón Social</span>
+                        <input type="text" data-boleta-campo="razon">
+                    </label>
+                    <label class="boleta-citacion__campo boleta-citacion__campo--ruc">
+                        <span>Cedula / R.U.C.</span>
+                        <input type="text" data-boleta-campo="ruc">
+                    </label>
+                    <label class="boleta-citacion__campo boleta-citacion__campo--sector">
+                        <span class="sr-only">Sector</span>
+                        <select data-boleta-campo="sector_tipo">
+                            <option value=""></option>
+                            <option value="boquete">Boquete</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                        <input type="text" data-boleta-campo="sector">
+                    </label>
+                    <label class="boleta-citacion__campo boleta-citacion__campo--direccion">
+                        <span>Dirección del Establecimiento:</span>
+                        <input type="text" data-boleta-campo="direccion">
+                    </label>
+                    <label class="boleta-citacion__campo boleta-citacion__campo--representante">
+                        <span>Representante Legal:</span>
+                        <input type="text" data-boleta-campo="representante">
+                    </label>
+                    <label class="boleta-citacion__campo boleta-citacion__campo--cedula">
+                        <span>Cedula R.L.</span>
+                        <input type="text" data-boleta-campo="cedula">
+                    </label>
+                    <label class="boleta-citacion__campo boleta-citacion__campo--domicilio">
+                        <span>Domicilio R.L.</span>
+                        <input type="text" data-boleta-campo="domicilio">
+                    </label>
+                    <label class="boleta-citacion__campo boleta-citacion__campo--fecha">
+                        <span>Fecha de Citación:</span>
+                        <input type="date" data-boleta-campo="fecha">
+                    </label>
+                    <label class="boleta-citacion__campo boleta-citacion__campo--hora">
+                        <span>Hora:</span>
+                        <input type="text" data-boleta-campo="hora">
+                    </label>
+                    <label class="boleta-citacion__campo boleta-citacion__campo--agente">
+                        <span>Agente Administrativo:</span>
+                        <input type="text" data-boleta-campo="agente">
+                    </label>
+                </div>
+
+                <div class="boleta-citacion__acciones">
+                    <button type="button" class="boton-boleta-citacion boton-boleta-citacion--primario" data-accion="generar-reporte-citacion">
+                        {% include "gestion/iconos.html" with icono="impresora" %}
+                        <span>CITACION</span>
+                    </button>
+                    <button type="button" class="boton-boleta-citacion" data-accion="cerrar-reporte">
+                        {% include "gestion/iconos.html" with icono="prohibido" %}
+                        <span>SALIR</span>
+                    </button>
+                </div>
+            </section>
+        </div>
     </div>
 </div>
 
@@ -403,6 +518,186 @@
                     <div>
                         <span></span>
                         <p>Firma del supervisor o jefe de sección</p>
+                    </div>
+                </footer>
+            </article>
+        </div>
+    </div>
+</div>
+
+<div class="modal-reporte" data-reporte-avances aria-hidden="true">
+    <div class="modal-reporte__panel" role="dialog" aria-modal="true" aria-labelledby="titulo-reporte-avances">
+        <header class="modal-reporte__barra">
+            <div>
+                <span>Vista previa</span>
+                <h2 id="titulo-reporte-avances">Bitácora de investigación</h2>
+            </div>
+            <div class="modal-reporte__acciones">
+                <button type="button" class="boton-modal boton-modal--primario" data-accion="imprimir-reporte">
+                    {% include "gestion/iconos.html" with icono="impresora" %}
+                    Imprimir
+                </button>
+                <button type="button" class="boton-modal" data-accion="cerrar-reporte">
+                    Cerrar
+                </button>
+            </div>
+        </header>
+
+        <div class="visor-reporte">
+            <article class="hoja-reporte hoja-avances" data-hoja-reporte>
+                <header class="avances-encabezado">
+                    <div class="reporte-sello">C.S.S.</div>
+                    <div>
+                        <strong>CAJA DE SEGURO SOCIAL</strong>
+                        <span>DIRECCIÓN NACIONAL DE INGRESOS</span>
+                        <span>DEPARTAMENTO DE INVESTIGACIÓN DE INGRESOS</span>
+                        <h3>BITÁCORA DE LA INVESTIGACIÓN A EMPRESAS</h3>
+                    </div>
+                    <div></div>
+                </header>
+
+                <section class="avances-datos">
+                    <p><strong>N° DE EMPLEADOR</strong> <span data-avances-sipe></span></p>
+                    <p><strong>FECHA DE ASIGNACIÓN:</strong> <span data-avances-fecha></span></p>
+                    <p><strong>RAZÓN SOCIAL:</strong> <span data-avances-razon></span></p>
+                    <p><span data-avances-establecimiento></span></p>
+                </section>
+
+                <table class="tabla-avances">
+                    <caption>DETALLE DE LA INVESTIGACIÓN</caption>
+                    <thead>
+                        <tr>
+                            <th>FECHA</th>
+                            <th>DESCRIPCIÓN</th>
+                            <th>NOMBRE DEL INVESTIGADOR<br>(JEFE / AGENTE O SUB-AGENTE)<br><small>(letra imprenta)</small></th>
+                            <th>N° DE<br>INVESTIGADOR</th>
+                            <th>FIRMA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fila in "1234567890123456" %}
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <section class="avances-pie">
+                    <label>
+                        <strong>FECHA DE CULMINACIÓN DE LA INVESTIGACIÓN</strong>
+                        <span></span>
+                    </label>
+                    <label>
+                        <strong>PÁGINA:</strong>
+                        <span></span>
+                    </label>
+                </section>
+
+                <section class="avances-notas">
+                    <p>
+                        NOTA: CADA DETALLE U OBSERVACIÓN DE LA GESTIÓN REALIZADA EN LA INVESTIGACIÓN DE ESTE EMPLEADOR, TIENE QUE LLEVAR: FECHA, NÚMERO, NOMBRE Y FIRMA DEL INVESTIGADOR.
+                    </p>
+                    <p>
+                        EN CASO DE NO ESTAR PRESENTE EL INVESTIGADOR DE INGRESOS RESPONSABLE DEL TRÁMITE Y SE PRESENTE EL EMPLEADOR A ENTREGAR ALGÚN DOCUMENTO, ES RESPONSABILIDAD DEL JEFE DEL DEPARTAMENTO, AGENTE ADMINISTRATIVO O SUB-AGENTE ADMINISTRATIVO DE ALIMENTAR Y COMPLETAR LOS DATOS ARRIBA SEÑALADO.
+                    </p>
+                    <p>
+                        TODA OBSERVACIÓN REALIZADA A LA BITÁCORA POR JEFE DE SECCIÓN, AGENTE /SUB-AGENTES ADMINISTRATIVOS O JEFE/SUB-JEFE DE DEPARTAMENTO DEBE CONTAR CON SUS RESPECTIVAS FIRMAS.
+                    </p>
+                    <p>DEBE ESCRIBIR EN LETRA IMPRENTA, ESTA PÁGINA NO DEBE SER REEMPLAZADA.</p>
+                </section>
+            </article>
+        </div>
+    </div>
+</div>
+
+<div class="modal-reporte" data-reporte-citacion aria-hidden="true">
+    <div class="modal-reporte__panel" role="dialog" aria-modal="true" aria-labelledby="titulo-reporte-citacion">
+        <header class="modal-reporte__barra">
+            <div>
+                <span>Vista previa</span>
+                <h2 id="titulo-reporte-citacion">Boleta de citación</h2>
+            </div>
+            <div class="modal-reporte__acciones">
+                <button type="button" class="boton-modal boton-modal--primario" data-accion="imprimir-reporte">
+                    {% include "gestion/iconos.html" with icono="impresora" %}
+                    Imprimir
+                </button>
+                <button type="button" class="boton-modal" data-accion="cerrar-reporte">
+                    Cerrar
+                </button>
+            </div>
+        </header>
+
+        <div class="visor-reporte">
+            <article class="hoja-reporte hoja-citacion" data-hoja-reporte>
+                <header class="citacion-encabezado">
+                    <div class="reporte-sello">C.S.S.</div>
+                    <div>
+                        <strong>CAJA DE SEGURO SOCIAL</strong>
+                        <span>DIRECCIÓN NACIONAL DE INGRESOS</span>
+                        <span>DEPARTAMENTO DE INVESTIGACIÓN DE INGRESOS</span>
+                        <h3>BOLETA DE CITACIÓN N° <span data-citacion-numero></span></h3>
+                    </div>
+                    <div></div>
+                </header>
+
+                <section class="citacion-fecha">
+                    <p>Boquete <span data-citacion-dia></span> de <span data-citacion-mes></span> de <span data-citacion-anio></span></p>
+                </section>
+
+                <section class="citacion-datos">
+                    <p><strong>Señor:</strong> <span data-citacion-representante></span></p>
+                    <p><strong>Representante Legal (RL) de:</strong> <span data-citacion-razon></span></p>
+                    <p><strong>Inscrita con N° de Empleador:</strong> <span data-citacion-sipe></span></p>
+                    <p><strong>Lugar de ubicación del RL:</strong> <span data-citacion-direccion></span></p>
+                </section>
+
+                <p class="citacion-parrafo">
+                    Por este medio le solicitamos presentarse al Departamento de Investigación de Ingresos ubicado en la Agencia de la Caja de Seguro Social, Bajo Boquete, Chiriquí, en un término de 5 días hábiles, a fin de atender lo solicitado en el o las Acta(s) de inspección a Empleadores.
+                </p>
+
+                <section class="citacion-presentacion">
+                    <strong>PRESENTARSE EL DÍA</strong>
+                    <span data-citacion-dia></span>
+                    <span data-citacion-mes></span>
+                    <span data-citacion-anio></span>
+                    <strong>EN HORARIO DE:</strong>
+                    <span>10:00 A.M.</span>
+                </section>
+
+                <section class="citacion-ley">
+                    <p>
+                        <strong>El Texto Único de la Ley 51 de 2005, Orgánica de la Caja de Seguro Social, cita en sus artículos 10 y 120 lo siguiente:</strong>
+                    </p>
+                    <p>
+                        Artículo 10. <u>Inspección de lugares de trabajo y recaudación de información.</u> La Caja de Seguro Social tiene la facultad y obligación de inspeccionar que los pagos de las obligaciones en materia de seguridad social de empleadores sean correctos.
+                    </p>
+                    <p>
+                        Artículo 120. Negativa a suministrar información. Se sancionará a quien se niegue a proporcionar a las autoridades de la Caja de Seguro Social los datos necesarios y pertinentes requeridos para la determinación de las cuotas empleado-empleador.
+                    </p>
+                </section>
+
+                <footer class="citacion-firmas">
+                    <div>
+                        <span data-citacion-representante></span>
+                        <p>Nombre del Representante Legal / Dignatario</p>
+                        <span></span>
+                        <p>Firma del Representante Legal</p>
+                        <span data-citacion-cedula></span>
+                        <p>N° de Cédula o Pasaporte</p>
+                    </div>
+                    <div>
+                        <span data-citacion-agente></span>
+                        <p>Agente Administrativo(a) C.S.S. Boquete</p>
+                        <span></span>
+                        <p>Firma del Investigador de Ingresos</p>
+                        <span></span>
+                        <p>N° de investigador de Ingresos</p>
                     </div>
                 </footer>
             </article>
