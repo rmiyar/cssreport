@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
-{% block titulo %}Gestión | CSS Report{% endblock %}
+{% block titulo %}investigacion | CSS Report{% endblock %}
 
 {% block contenido %}
 <section class="encabezado-pagina" aria-labelledby="titulo-gestion">
-    <h1 id="titulo-gestion">Gestión</h1>
+    <h1 id="titulo-gestion">investigacion</h1>
     <p>Seleccione una opción para acceder al módulo correspondiente.</p>
 </section>
 
-<section class="grid-modulos" aria-label="Módulos de gestión">
+<section class="grid-modulos" aria-label="Módulos de investigacion">
     {% for modulo in modulos %}
         <a class="tarjeta-modulo" href="{% url 'gestion:detalle_modulo' modulo.slug %}">
             <span class="tarjeta-modulo__icono tarjeta-modulo__icono--{{ modulo.color }}">

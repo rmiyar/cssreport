@@ -6,83 +6,75 @@
 <div class="pantalla-inscripcion">
     <section class="encabezado-inscripcion" aria-labelledby="titulo-inscripcion">
         <div class="encabezado-inscripcion__principal">
-            <a class="boton-regreso" href="{% url 'gestion:panel' %}" aria-label="Volver a Gestión">
-                {% include "gestion/iconos.html" with icono="flecha-izquierda" %}
-            </a>
+            <span class="encabezado-inscripcion__icono" aria-hidden="true">
+                {% include "gestion/iconos.html" with icono="cuadricula" %}
+            </span>
             <div>
-                <h1 id="titulo-inscripcion">Inscripción</h1>
-                <p>Consulta de registros y creación de nuevas inscripciones.</p>
+                <h1 id="titulo-inscripcion">investigacion de Inscripciones</h1>
+                <p>Administre y consulte todas las inscripciones registradas en el sistema.</p>
             </div>
         </div>
-
-        <dl class="metricas-inscripcion">
-            <div>
-                <dt>Total</dt>
-                <dd>{{ total_inscripciones }}</dd>
-            </div>
-            <div>
-                <dt>Último registro</dt>
-                <dd>{{ ultima_inscripcion.nombre_establecimiento|default:"Sin registros" }}</dd>
-            </div>
-        </dl>
     </section>
 
     <div class="cuerpo-inscripcion">
         <section class="panel-listado" aria-labelledby="titulo-inscripciones-creadas">
             <header class="panel-listado__cabecera">
                 <div class="panel-listado__titulo">
-                    {% include "gestion/iconos.html" with icono="archivo" %}
+                    <span class="indicador-seccion">2</span>
                     <div>
-                        <h2 id="titulo-inscripciones-creadas">Inscripciones creadas</h2>
-                        <p>Últimos registros guardados en el sistema.</p>
+                        <h2 id="titulo-inscripciones-creadas">Lista de Inscripciones</h2>
                     </div>
                 </div>
-                <span class="contador-registros">{{ total_inscripciones }} registro{{ total_inscripciones|pluralize }}</span>
             </header>
 
             {% if inscripciones %}
-                <div class="lista-inscripciones" aria-label="Listado de inscripciones creadas">
-                    {% for inscripcion in inscripciones %}
-                        <a class="item-inscripcion{% if inscripcion_en_edicion.pk == inscripcion.pk %} item-inscripcion--activa{% endif %}" href="?editar={{ inscripcion.pk }}#formulario-inscripcion">
-                            <div>
-                                <strong>{{ inscripcion.nombre_establecimiento }}</strong>
-                                <span>{{ inscripcion.empleador_razon_social }}</span>
-                            </div>
-                            <dl>
-                                <div>
-                                    <dt>R.U.C.</dt>
-                                    <dd>{{ inscripcion.cedula_ruc }}</dd>
-                                </div>
-                                <div>
-                                    <dt>Fecha</dt>
-                                    <dd>{{ inscripcion.fecha_operacion|date:"d/m/Y"|default:"-" }}</dd>
-                                </div>
-                            </dl>
-                            <footer>
-                                <span class="etiqueta-actividad">{{ inscripcion.get_tipo_actividad_display }}</span>
-                                <span>{{ inscripcion.telefono|default:"Sin teléfono" }}</span>
-                            </footer>
-                        </a>
-                    {% endfor %}
+                <div class="tabla-inscripciones-contenedor">
+                    <table class="tabla-inscripciones">
+                        <thead>
+                            <tr>
+                                <th>Tipo Gestión</th>
+                                <th>Estado</th>
+                                <th>Tipo Actividad</th>
+                                <th>R.U.C.</th>
+                                <th>Empleador</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for inscripcion in inscripciones %}
+                                <tr class="{% if inscripcion_en_edicion.pk == inscripcion.pk %}tabla-inscripciones__fila--activa{% endif %}">
+                                    <td>{{ inscripcion.get_tipo_gestion_display }}</td>
+                                    <td><span class="estado-inscripcion">{{ inscripcion.get_estado_gestion_display }}</span></td>
+                                    <td>{{ inscripcion.get_tipo_actividad_display|upper }}</td>
+                                    <td>{{ inscripcion.cedula_ruc }}</td>
+                                    <td>
+                                        <a class="tabla-inscripciones__enlace" href="?editar={{ inscripcion.pk }}#formulario-inscripcion">
+                                            {{ inscripcion.empleador_razon_social }}
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
 
-                <nav class="paginador-listado" aria-label="Paginación de inscripciones">
-                    {% if inscripciones.has_previous %}
-                        <a href="?pagina={{ inscripciones.previous_page_number }}">Anterior</a>
-                    {% else %}
-                        <span class="paginador-listado__deshabilitado">Anterior</span>
-                    {% endif %}
+                <footer class="pie-listado">
+                    <span>Mostrando {{ inscripciones.start_index }} a {{ inscripciones.end_index }} de {{ total_inscripciones }} registro{{ total_inscripciones|pluralize }}</span>
+                    <nav class="paginador-listado" aria-label="Paginación de inscripciones">
+                        {% if inscripciones.has_previous %}
+                            <a href="?pagina={{ inscripciones.previous_page_number }}">Anterior</a>
+                        {% else %}
+                            <span class="paginador-listado__deshabilitado">Anterior</span>
+                        {% endif %}
 
-                    <span class="paginador-listado__estado">
-                        Página {{ inscripciones.number }} de {{ inscripciones.paginator.num_pages }}
-                    </span>
+                        <span class="paginador-listado__estado">{{ inscripciones.number }}</span>
 
-                    {% if inscripciones.has_next %}
-                        <a href="?pagina={{ inscripciones.next_page_number }}">Siguiente</a>
-                    {% else %}
-                        <span class="paginador-listado__deshabilitado">Siguiente</span>
-                    {% endif %}
-                </nav>
+                        {% if inscripciones.has_next %}
+                            <a href="?pagina={{ inscripciones.next_page_number }}">Siguiente</a>
+                        {% else %}
+                            <span class="paginador-listado__deshabilitado">Siguiente</span>
+                        {% endif %}
+                    </nav>
+                </footer>
             {% else %}
                 <div class="estado-vacio">
                     <strong>No hay inscripciones creadas.</strong>
@@ -96,16 +88,9 @@
 
             <div class="cabecera-seccion-formulario">
                 <div>
-                    <span>Formulario</span>
+                    <span class="indicador-seccion">1</span>
                     <h2>{% if inscripcion_en_edicion %}Editar inscripción{% else %}Nueva inscripción{% endif %}</h2>
                 </div>
-                <p>
-                    {% if inscripcion_en_edicion %}
-                        Actualice la información requerida para guardar los cambios.
-                    {% else %}
-                        Complete la información requerida para guardar una nueva inscripción.
-                    {% endif %}
-                </p>
             </div>
 
             <section class="panel-formulario" aria-labelledby="titulo-informacion-general">
@@ -115,6 +100,31 @@
                 </header>
 
                 <div class="panel-formulario__contenido grilla-general">
+                    <div class="campo-formulario campo-formulario--tipo-gestion">
+                        <label for="{{ formulario.tipo_gestion.id_for_label }}">Tipo de Gestión:</label>
+                        {{ formulario.tipo_gestion }}
+                        {{ formulario.tipo_gestion.errors }}
+                    </div>
+
+                    <fieldset class="campo-formulario campo-formulario--estado-gestion">
+                        <legend>Estado de Gestión:</legend>
+                        <div class="opciones-radio opciones-radio--estado">
+                            {% for opcion in formulario.estado_gestion %}
+                                <label class="opcion-radio">
+                                    {{ opcion.tag }}
+                                    <span>{{ opcion.choice_label }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                        {{ formulario.estado_gestion.errors }}
+                    </fieldset>
+
+                    <div class="campo-formulario campo-formulario--calendario">
+                        <label for="{{ formulario.fecha_calendario.id_for_label }}">Calendario:</label>
+                        {{ formulario.fecha_calendario }}
+                        {{ formulario.fecha_calendario.errors }}
+                    </div>
+
                     <div class="campo-formulario campo-formulario--fecha">
                         <label for="{{ formulario.fecha_operacion.id_for_label }}">Fecha de Operación:</label>
                         {{ formulario.fecha_operacion }}
@@ -152,19 +162,19 @@
                         {{ formulario.numero_mainframe.errors }}
                     </div>
 
-                    <div class="campo-formulario campo-formulario--completo">
+                    <div class="campo-formulario campo-formulario--completo campo-formulario--establecimiento">
                         <label for="{{ formulario.nombre_establecimiento.id_for_label }}">Nombre del establecimiento:</label>
                         {{ formulario.nombre_establecimiento }}
                         {{ formulario.nombre_establecimiento.errors }}
                     </div>
 
-                    <div class="campo-formulario campo-formulario--completo">
+                    <div class="campo-formulario campo-formulario--completo campo-formulario--razon">
                         <label for="{{ formulario.empleador_razon_social.id_for_label }}">Empleador o Razón Social</label>
                         {{ formulario.empleador_razon_social }}
                         {{ formulario.empleador_razon_social.errors }}
                     </div>
 
-                    <div class="campo-formulario campo-formulario--completo">
+                    <div class="campo-formulario campo-formulario--completo campo-formulario--ruc">
                         <label for="{{ formulario.cedula_ruc.id_for_label }}">Cédula / R.U.C.</label>
                         {{ formulario.cedula_ruc }}
                         {{ formulario.cedula_ruc.errors }}
@@ -236,10 +246,10 @@
                         Cancelar
                     </a>
                 {% endif %}
-                <a class="boton-formulario boton-formulario--salir" href="{% url 'gestion:panel' %}">
+                <button class="boton-formulario boton-formulario--salir" type="reset">
                     {% include "gestion/iconos.html" with icono="prohibido" %}
-                    Salir
-                </a>
+                    Limpiar
+                </button>
             </div>
 
             <section class="panel-acciones-modulo" aria-labelledby="titulo-acciones-modulo">
@@ -247,7 +257,7 @@
                     {% include "gestion/iconos.html" with icono="cuadricula" %}
                     <div>
                         <h2 id="titulo-acciones-modulo">Acciones del módulo</h2>
-                        <p>Herramientas complementarias para la gestión de inscripciones.</p>
+                        <p>Herramientas complementarias para la investigacion de inscripciones.</p>
                     </div>
                 </header>
 
@@ -260,7 +270,7 @@
                         {% include "gestion/iconos.html" with icono="carpeta" %}
                         <span>Avances</span>
                     </button>
-                    <button type="button" class="boton-accion-modulo">
+                    <button type="button" class="boton-accion-modulo" data-accion="abrir-reporte-acta">
                         {% include "gestion/iconos.html" with icono="acta" %}
                         <span>Acta</span>
                     </button>
@@ -276,7 +286,7 @@
                         {% include "gestion/iconos.html" with icono="calendario" %}
                         <span>Preliminar</span>
                     </button>
-                    <button type="button" class="boton-accion-modulo">
+                    <button type="button" class="boton-accion-modulo" data-accion="abrir-operativos">
                         {% include "gestion/iconos.html" with icono="grafico" %}
                         <span>Operativos</span>
                     </button>
@@ -304,17 +314,807 @@
                         {% include "gestion/iconos.html" with icono="descarga" %}
                         <span>Inf. Inscripción</span>
                     </button>
-                    <button type="button" class="boton-accion-modulo">
+                    <button type="button" class="boton-accion-modulo" data-accion="abrir-modulo-reactivacion">
                         {% include "gestion/iconos.html" with icono="reactivar" %}
                         <span>Reactivación</span>
                     </button>
-                    <button type="button" class="boton-accion-modulo">
+                    <button type="button" class="boton-accion-modulo" data-accion="abrir-modulo-inactividad">
                         {% include "gestion/iconos.html" with icono="advertencia" %}
                         <span>Inact./Otros</span>
                     </button>
                 </div>
             </section>
         </form>
+    </div>
+</div>
+
+<div class="modal-reporte" data-modulo-inactividad data-guardar-url="{% url 'gestion:guardar_inactividad' %}" aria-hidden="true">
+    <div class="modal-reporte__panel modal-reporte__panel--inactividad" role="dialog" aria-modal="true" aria-labelledby="titulo-inactividad">
+        <header class="modal-reporte__barra">
+            <div><span>Módulo</span><h2 id="titulo-inactividad">Cierre, inactividad y otras operaciones</h2></div>
+            <div class="modal-reporte__acciones">
+                <button type="button" class="boton-modal boton-modal--primario" data-accion="guardar-inactividad">Guardar</button>
+                <button type="button" class="boton-modal" data-accion="cerrar-reporte">Cerrar</button>
+            </div>
+        </header>
+        <div class="pantalla-inactividad">
+            <aside class="inactividad-listado">
+                <header><strong>Gestiones tipo 6</strong><span>{{ inactividades|length }} registros</span></header>
+                <div class="inactividad-listado__items">
+                    {% for item in inactividades %}
+                        <button type="button" data-inactividad-item data-id="{{ item.pk }}"
+                            data-identificacion="{{ item.cedula_ruc }}" data-empleador="{{ item.empleador_razon_social }}"
+                            data-comercial="{{ item.nombre_establecimiento }}" data-direccion="{{ item.direccion_establecimiento }}"
+                            data-telefono="{{ item.telefono }}" data-representante="{{ item.representante_legal }}"
+                            data-cedula="{{ item.cedula_representante }}" data-fecha="{{ item.fecha_operacion|date:'Y-m-d' }}">
+                            <strong>{{ item.nombre_establecimiento }}</strong><span>{{ item.cedula_ruc }}</span>
+                        </button>
+                    {% empty %}<p>No hay gestiones tipo 6 registradas.</p>{% endfor %}
+                </div>
+            </aside>
+            <section class="inactividad-formulario">
+                <nav class="inactividad-tabs" role="tablist">
+                    <button type="button" class="activo" data-inactividad-tab="parte-1" role="tab" aria-selected="true">PARTE 1</button>
+                    <button type="button" data-inactividad-tab="parte-2" role="tab" aria-selected="false">PARTE 2</button>
+                </nav>
+                <div data-inactividad-panel="parte-1">
+                <div class="inactividad-cabecera-campos">
+                    <label>Informe N°<input data-inactividad-campo="informe"></label>
+                    <label>Fecha de informe<input type="date" data-inactividad-campo="fechaInforme"></label>
+                </div>
+                <h3>Datos generales del empleador</h3>
+                <div class="inactividad-grid inactividad-grid--generales">
+                    <label>N°. de identificación<input data-inactividad-campo="identificacion" readonly></label>
+                    <label>Fecha<input type="date" data-inactividad-campo="fecha"></label>
+                    <label>Empleador o razón social<input data-inactividad-campo="empleador" readonly></label>
+                    <label>Nombre comercial<input data-inactividad-campo="comercial" readonly></label>
+                    <label class="inactividad-campo--ancho">Dirección<input data-inactividad-campo="direccion" readonly></label>
+                    <label>Tel. empresa<input data-inactividad-campo="telefono" readonly></label>
+                    <label>Representante legal<input data-inactividad-campo="representante" readonly></label>
+                    <label>Cédula representante<input data-inactividad-campo="cedula" readonly></label>
+                </div>
+                <h3>I. Investigación interna</h3>
+                <div class="inactividad-grid">
+                    <label>Fecha de inscripción<input type="date" data-inactividad-campo="fechaInscripcion"></label>
+                    <label>Última factura<input data-inactividad-campo="ultimaFactura"></label>
+                    <label>C.I.P. persona natural<input data-inactividad-campo="cipNatural"></label>
+                    <label>R.U.C. persona jurídica<input data-inactividad-campo="rucJuridica"></label>
+                    <label>Período de morosidad<input data-inactividad-campo="periodoMorosidad"></label>
+                    <label>Tipo de facturación morosa<input data-inactividad-campo="tipoFacturacion"></label>
+                    <label>C.S.S. B/.<input type="number" step="0.01" data-inactividad-campo="css"></label>
+                    <label>S.E./I.R.<input type="number" step="0.01" data-inactividad-campo="seir"></label>
+                    <label>Total B/.<input type="number" step="0.01" data-inactividad-campo="total"></label>
+                </div>
+                <h3>II. Resultados de la investigación</h3>
+                <div class="inactividad-grid">
+                    <label class="inactividad-campo--ancho">Dirección localizada<input data-inactividad-campo="direccionResultado"></label>
+                    <fieldset><legend>¿Localizado?</legend><label><input type="radio" name="inactividad-localizado" value="si"> Sí</label><label><input type="radio" name="inactividad-localizado" value="no"> No</label></fieldset>
+                    <fieldset><legend>¿Nueva dirección?</legend><label><input type="radio" name="inactividad-nueva-direccion" value="si"> Sí</label><label><input type="radio" name="inactividad-nueva-direccion" value="no"> No</label></fieldset>
+                    <fieldset><legend>¿Patrono activo?</legend><label><input type="radio" name="inactividad-patrono-activo" value="si"> Sí</label><label><input type="radio" name="inactividad-patrono-activo" value="no"> No</label></fieldset>
+                    <label>Tipo de inactividad<select data-inactividad-campo="tipoInactividad"><option value="">Seleccione</option><option value="definitiva">Definitiva</option><option value="temporal">Temporal</option></select></label>
+                    <label>Fecha de cese<input type="date" data-inactividad-campo="fechaCese"></label>
+                    <label>Presentación<input type="date" data-inactividad-campo="presentacion"></label>
+                    <label>Días (C-B)<input type="number" min="0" data-inactividad-campo="dias"></label>
+                    <label>N° de empleados última planilla<input type="number" min="0" data-inactividad-campo="empleados"></label>
+                    <label>Monto de la planilla<input type="number" step="0.01" data-inactividad-campo="montoPlanilla"></label>
+                </div>
+                <h3>III. Resultados de la investigación</h3>
+                <label class="inactividad-resultado">Resultado<textarea data-inactividad-campo="resultado"></textarea></label>
+                <div class="inactividad-grid inactividad-firmas">
+                    <label>Agente administrativo<input data-inactividad-campo="agente"></label>
+                    <label>Sub-agente administrativo<input data-inactividad-campo="subAgente"></label>
+                    <label>Investigador(a)<input data-inactividad-campo="investigador"></label>
+                </div>
+                </div>
+
+                <div data-inactividad-panel="parte-2" hidden>
+                    <h3>IV. Períodos afectados</h3>
+                    <div class="inactividad-periodos">
+                        <label>1. Eliminar deuda improcedente<input data-inactividad-campo="periodoEliminarDeuda" placeholder="Período afectado"></label>
+                        <label>Monto B/.<input type="number" step="0.01" data-inactividad-campo="montoEliminarDeuda"></label>
+                        <label>2. Proceder al cobro<input data-inactividad-campo="periodoProcederCobro" placeholder="Período afectado"></label>
+                        <label>Monto B/.<input type="number" step="0.01" data-inactividad-campo="montoProcederCobro"></label>
+                        <label>5. Otros (deshabilitación)<input data-inactividad-campo="periodoOtros"></label>
+                        <label>Monto B/.<input type="number" step="0.01" data-inactividad-campo="montoOtros"></label>
+                    </div>
+
+                    <h3>V. Documentos adjuntos</h3>
+                    <div class="inactividad-checks inactividad-checks--documentos">
+                        <label><input type="checkbox" data-inactividad-campo="documentoDatosGenerales"> Datos generales</label>
+                        <label><input type="checkbox" data-inactividad-campo="documentoConsultaMasiva"> Consulta masiva de facturación</label>
+                        <label><input type="checkbox" data-inactividad-campo="documentoCertificacionDeuda"> Certificación de deuda</label>
+                        <label><input type="checkbox" data-inactividad-campo="documentoPlanillaRecibo"> Copia de planilla preelaborada y recibo de pago</label>
+                        <label><input type="checkbox" data-inactividad-campo="documentoOtros"> Otros</label>
+                        <label class="inactividad-campo--ancho">Detalle de otros<textarea data-inactividad-campo="documentoOtrosDetalle"></textarea></label>
+                    </div>
+
+                    <h3>Trasladar copia a</h3>
+                    <div class="inactividad-checks">
+                        <label><input type="checkbox" data-inactividad-campo="trasladoInscripcion"> Depto. de Inscripción</label>
+                        <label><input type="checkbox" data-inactividad-campo="trasladoAuditoria"> Depto. Auditoría de Empresa</label>
+                        <label><input type="checkbox" data-inactividad-campo="trasladoEliminacion"> Eliminación</label>
+                        <label><input type="checkbox" data-inactividad-campo="trasladoApremio"> Depto. de Apremio y Cobros</label>
+                        <label><input type="checkbox" data-inactividad-campo="trasladoPlanilla"> Sección de Planilla Complementaria</label>
+                        <label><input type="checkbox" data-inactividad-campo="trasladoJuzgado"> Juzgado Ejecutor</label>
+                        <label><input type="checkbox" data-inactividad-campo="trasladoDenuncias"> Denuncias y Sanciones</label>
+                        <label><input type="checkbox" data-inactividad-campo="trasladoArchivo"> Archivo del Departamento</label>
+                    </div>
+
+                    <h3>VIII. Sanciones a aplicar</h3>
+                    <label class="inactividad-resultado">Observaciones de la sanción<textarea data-inactividad-campo="observacionSancion"></textarea></label>
+                    <div class="inactividad-sanciones">
+                        <label><input type="checkbox" data-inactividad-campo="sancionFaltaCese"> Falta de Notificación de Cese <strong>Art. 86</strong></label>
+                        <label><input type="checkbox" data-inactividad-campo="sancionSustitucion"> Sustitución de Empleador <strong>Art. 87</strong></label>
+                        <label><input type="checkbox" data-inactividad-campo="sancionDeclaracionFalsa"> Declaración falsa de Salarios <strong>Art. 89</strong></label>
+                        <label><input type="checkbox" data-inactividad-campo="sancionSubdeclaracion"> Sub-Declaración en Planillas <strong>Art. 91</strong></label>
+                        <label><input type="checkbox" data-inactividad-campo="sancionNegativaInformacion"> Negativa de Suministrar información <strong>Art. 93</strong></label>
+                    </div>
+                </div>
+                <p class="inactividad-estado" data-inactividad-estado></p>
+            </section>
+        </div>
+    </div>
+</div>
+
+<div class="modal-reporte" data-modulo-operativos data-guardar-url="{% url 'gestion:guardar_operativo' %}" aria-hidden="true">
+    <div class="modal-reporte__panel modal-reporte__panel--operativos" role="dialog" aria-modal="true" aria-labelledby="titulo-operativos">
+        <header class="modal-reporte__barra operativos-cabecera">
+            <div>
+                <span>Consulta general</span>
+                <h2 id="titulo-operativos">Operativos</h2>
+            </div>
+            <div class="modal-reporte__acciones">
+                <button type="button" class="boton-modal" data-accion="generar-pdf-operativos">Generar PDF</button>
+                <button type="button" class="boton-modal boton-modal--primario" data-accion="nuevo-operativo">+ Nuevo registro</button>
+                <button type="button" class="boton-modal" data-accion="cerrar-reporte">Cerrar</button>
+            </div>
+        </header>
+
+        <section class="pantalla-operativos">
+            <div class="operativos-herramientas">
+                <div class="operativos-filtros">
+                    <label>Mes
+                        <select data-operativos-mes>
+                            <option value="">Todos</option>
+                            <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
+                            <option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option>
+                            <option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option>
+                            <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+                        </select>
+                    </label>
+                    <label>Año
+                        <select data-operativos-anio><option value="">Todos</option></select>
+                    </label>
+                </div>
+                <label class="operativos-buscador">
+                    <span>Buscar en la tabla</span>
+                    <input type="search" placeholder="Número patronal, empleador o movimiento" data-operativos-busqueda>
+                </label>
+                <div class="operativos-herramientas__acciones">
+                    <p><strong data-operativos-total>{{ total_operativos }}</strong> registros</p>
+                </div>
+            </div>
+
+            <form class="formulario-operativo" data-formulario-operativo hidden>
+                <div class="formulario-operativo__cabecera">
+                    <div>
+                        <strong>Ingresar registro operativo</strong>
+                        <span>Complete los datos principales y los indicadores que correspondan.</span>
+                    </div>
+                    <button type="button" class="boton-modal" data-accion="cancelar-operativo">Cancelar</button>
+                </div>
+                <div class="formulario-operativo__campos">
+                    <label>Fecha*<input type="date" name="fecha" required></label>
+                    <label>Consecutivo<input type="text" name="consecutivo" maxlength="20"></label>
+                    <label>Núm. patronal*<input type="text" name="numero_patronal" maxlength="50" required></label>
+                    <label class="formulario-operativo__campo-ancho">Patrono 1*<input type="text" name="patrono_1" maxlength="180" required></label>
+                    <label class="formulario-operativo__campo-ancho">Patrono 2<input type="text" name="patrono_2" maxlength="180"></label>
+                    <label>Movimiento<select name="movimiento"><option value="inicial">INICIAL</option><option value="seguimiento">SEGUIMIENTO</option><option value="citacion">CITACIÓN</option><option value="conclusion">CONCLUSIÓN</option><option value="sanciones">SANCIONES</option></select></label>
+                    <label>Fecha informe<input type="date" name="fecha_informe"></label>
+                    <label>Núm. informe<input type="text" name="numero_informe" maxlength="50"></label>
+                    <label>Salario<input type="number" name="salario" min="0" step="0.01" value="0.00"></label>
+                    <label>Emp. nac.<input type="number" name="empleados_nacionales" min="0"></label>
+                    <label>Emp. ext.<input type="number" name="empleados_extranjeros" min="0"></label>
+                    <label>Entrev.<input type="number" name="entrevistados" min="0"></label>
+                    <label>Omit. nac.<input type="number" name="omitidos_nacionales" min="0"></label>
+                    <label>Omit. ext.<input type="number" name="omitidos_extranjeros" min="0"></label>
+                    <label>Sin ficha<input type="number" name="sin_ficha" min="0"></label>
+                    <label>Recién<input type="number" name="recien_ingresados" min="0"></label>
+                    <label>Citados<input type="number" name="citados" min="0"></label>
+                    <label>No inscritos<input type="number" name="no_inscritos" min="0"></label>
+                </div>
+                <div class="formulario-operativo__pie">
+                    <p data-operativos-estado aria-live="polite"></p>
+                    <button type="submit" class="boton-modal boton-modal--primario" data-accion="guardar-operativo">Guardar registro</button>
+                </div>
+            </form>
+
+            <div class="operativos-tabla-contenedor" tabindex="0" aria-label="Tabla de operativos con desplazamiento horizontal">
+                <table class="tabla-operativos">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Conc.</th>
+                            <th>Núm. patronal</th>
+                            <th>Patrono 1</th>
+                            <th>Patrono 2</th>
+                            <th>Movimiento</th>
+                            <th>Fecha inf.</th>
+                            <th>Núm. inf.</th>
+                            <th>Salario</th>
+                            <th>Emp. nac.</th>
+                            <th>Emp. ext.</th>
+                            <th>Entrev.</th>
+                            <th>Omit. nac.</th>
+                            <th>Omit. ext.</th>
+                            <th>Sin ficha</th>
+                            <th>Recién</th>
+                            <th>Citado</th>
+                            <th>No inscr.</th>
+                        </tr>
+                    </thead>
+                    <tbody data-operativos-cuerpo>
+                        {% for operativo in operativos_guardados %}
+                            <tr data-operativos-fila data-operativo-id="{{ operativo.pk }}" data-operativo-fecha="{{ operativo.fecha|date:'Y-m-d' }}">
+                                <td>{{ operativo.fecha|date:"d/m/Y" }}</td>
+                                <td>{{ operativo.consecutivo|default:"-" }}</td>
+                                <td>{{ operativo.numero_patronal }}</td>
+                                <td title="{{ operativo.patrono_1 }}">{{ operativo.patrono_1 }}</td>
+                                <td title="{{ operativo.patrono_2 }}">{{ operativo.patrono_2 }}</td>
+                                <td>{{ operativo.get_movimiento_display }}</td>
+                                <td>{% if operativo.fecha_informe %}{{ operativo.fecha_informe|date:"d/m/Y" }}{% else %}//{% endif %}</td>
+                                <td>{{ operativo.numero_informe }}</td>
+                                <td class="tabla-operativos__numero">{{ operativo.salario }}</td>
+                                <td class="tabla-operativos__numero">{{ operativo.empleados_nacionales|default_if_none:"" }}</td>
+                                <td class="tabla-operativos__numero">{{ operativo.empleados_extranjeros|default_if_none:"" }}</td>
+                                <td class="tabla-operativos__numero">{{ operativo.entrevistados|default_if_none:"" }}</td>
+                                <td class="tabla-operativos__numero">{{ operativo.omitidos_nacionales|default_if_none:"" }}</td>
+                                <td class="tabla-operativos__numero">{{ operativo.omitidos_extranjeros|default_if_none:"" }}</td>
+                                <td class="tabla-operativos__numero">{{ operativo.sin_ficha|default_if_none:"" }}</td>
+                                <td class="tabla-operativos__numero">{{ operativo.recien_ingresados|default_if_none:"" }}</td>
+                                <td class="tabla-operativos__numero">{{ operativo.citados|default_if_none:"" }}</td>
+                                <td class="tabla-operativos__numero">{{ operativo.no_inscritos|default_if_none:"" }}</td>
+                            </tr>
+                        {% endfor %}
+                        {% for registro in registros_operativos %}
+                            <tr data-operativos-fila data-operativo-fecha="{{ registro.fecha_operacion|default:registro.creado_en|date:'Y-m-d' }}">
+                                <td>{{ registro.fecha_operacion|default:registro.creado_en|date:"d/m/Y" }}</td>
+                                <td>{{ registro.letra_binding_case|default:"-" }}</td>
+                                <td>{{ registro.numero_sipe|default:"S/N" }}</td>
+                                <td title="{{ registro.nombre_establecimiento }}">{{ registro.nombre_establecimiento }}</td>
+                                <td title="{{ registro.empleador_razon_social }}">{{ registro.empleador_razon_social }}</td>
+                                <td>{{ registro.get_estado_gestion_display }}</td>
+                                <td>{% if registro.fecha_calendario %}{{ registro.fecha_calendario|date:"d/m/Y" }}{% else %}//{% endif %}</td>
+                                <td>{{ registro.numero_mainframe }}</td>
+                                <td class="tabla-operativos__numero">{{ registro.monto_salarios|default_if_none:"0.00" }}</td>
+                                <td></td>
+                                <td></td>
+                                <td class="tabla-operativos__numero">{{ registro.numero_entrevistados|default_if_none:"" }}</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td>{% if registro.estado_gestion == "citacion" %}X{% endif %}</td>
+                                <td></td>
+                            </tr>
+                        {% endfor %}
+                        {% if not operativos_guardados and not registros_operativos %}
+                            <tr class="tabla-operativos__vacia">
+                                <td colspan="18">No hay registros operativos disponibles.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+            <p class="operativos-sin-resultados" data-operativos-sin-resultados hidden>No hay registros que coincidan con la búsqueda.</p>
+        </section>
+    </div>
+</div>
+
+<div class="modal-reporte" data-reporte-operativos aria-hidden="true">
+    <div class="modal-reporte__panel modal-reporte__panel--resultado-operativos" role="dialog" aria-modal="true" aria-labelledby="titulo-reporte-operativos">
+        <header class="modal-reporte__barra">
+            <div>
+                <span>Vista previa</span>
+                <h2 id="titulo-reporte-operativos">Resultado preliminar de operativo</h2>
+            </div>
+            <div class="modal-reporte__acciones">
+                <button type="button" class="boton-modal boton-modal--primario" data-accion="imprimir-reporte">
+                    {% include "gestion/iconos.html" with icono="impresora" %}
+                    Imprimir / PDF
+                </button>
+                <button type="button" class="boton-modal" data-accion="cerrar-reporte">Cerrar</button>
+            </div>
+        </header>
+        <div class="visor-reporte">
+            <article class="hoja-reporte hoja-resultado-operativos" data-hoja-reporte>
+                <header class="resultado-operativos__encabezado">
+                    <div class="resultado-operativos__sello">{% include "gestion/iconos.html" with icono="institucion" %}</div>
+                    <div>
+                        <strong>CAJA DE SEGURO SOCIAL</strong>
+                        <span>DIRECCIÓN NACIONAL DE INGRESOS</span>
+                        <span>DEPARTAMENTO DE INVESTIGACIÓN DE INGRESOS</span>
+                        <h3>RESULTADO PRELIMINAR DE EMPRESAS INSPECCIONADAS EN OPERATIVO</h3>
+                        <h3>AGENCIA ADMINISTRATIVA DE BOQUETE</h3>
+                    </div>
+                    <div></div>
+                </header>
+                <section class="resultado-operativos__periodo">
+                    <p><strong>FECHA:</strong> <span data-reporte-operativos-fecha></span></p>
+                    <p><strong data-reporte-operativos-mes></strong> / <span data-reporte-operativos-anio></span></p>
+                </section>
+                <h4>DETALLE DE CONTROL DE OPERATIVO</h4>
+                <table class="tabla-resultado-operativos">
+                    <thead>
+                        <tr>
+                            <th>Cant.</th><th>Fecha</th><th>N° de empleador</th><th>Razón social del empleador</th>
+                            <th>Empleados nacionales</th><th>Empleados extranjeros</th><th>Total entrevistados</th>
+                            <th>Omitidos nacionales</th><th>Omitidos extranjeros</th><th>Sin ficha</th>
+                            <th>Recién ingreso</th><th>Citado</th><th>No inscrita</th><th>Monto salarios B/.</th><th>S.S. 23% salarios B/.</th>
+                        </tr>
+                    </thead>
+                    <tbody data-reporte-operativos-cuerpo></tbody>
+                    <tfoot data-reporte-operativos-totales></tfoot>
+                </table>
+            </article>
+        </div>
+    </div>
+</div>
+
+<div class="modal-reporte" data-modulo-reactivacion data-guardar-url="{% url 'gestion:guardar_reactivacion' %}" aria-hidden="true">
+    <div class="modal-reporte__panel modal-reporte__panel--reactivacion" role="dialog" aria-modal="true" aria-labelledby="titulo-modulo-reactivacion">
+        <header class="modal-reporte__barra">
+            <div>
+                <span>Módulo</span>
+                <h2 id="titulo-modulo-reactivacion">Reactivación</h2>
+            </div>
+            <div class="modal-reporte__acciones">
+                <button type="button" class="boton-modal" data-accion="cerrar-reporte">
+                    Cerrar
+                </button>
+            </div>
+        </header>
+
+        <div class="pantalla-reactivacion">
+            <aside class="reactivacion-listado" aria-labelledby="titulo-listado-reactivacion">
+                <header class="reactivacion-listado__cabecera">
+                    {% include "gestion/iconos.html" with icono="reactivar" %}
+                    <div>
+                        <h3 id="titulo-listado-reactivacion">Gestiones de reactivación</h3>
+                        <p>{{ reactivaciones|length }} registro{{ reactivaciones|length|pluralize }}</p>
+                    </div>
+                </header>
+
+                {% if reactivaciones %}
+                    <div class="reactivacion-listado__items">
+                        {% for reactivacion in reactivaciones %}
+                            <button
+                                type="button"
+                                class="reactivacion-item"
+                                data-reactivacion-item
+                                data-id="{{ reactivacion.pk }}"
+                                data-empleador="{{ reactivacion.empleador_razon_social }}"
+                                data-establecimiento="{{ reactivacion.nombre_establecimiento }}"
+                                data-ruc="{{ reactivacion.cedula_ruc }}"
+                                data-estado="{{ reactivacion.get_estado_gestion_display }}"
+                                data-actividad="{{ reactivacion.get_tipo_actividad_display }}"
+                                data-calendario="{{ reactivacion.fecha_calendario|date:'Y-m-d' }}"
+                                data-fecha="{{ reactivacion.fecha_operacion|date:'Y-m-d' }}"
+                                data-sipe="{{ reactivacion.numero_sipe }}"
+                                data-mainframe="{{ reactivacion.numero_mainframe }}"
+                                data-representante="{{ reactivacion.representante_legal }}"
+                                data-cedula-representante="{{ reactivacion.cedula_representante }}"
+                                data-direccion="{{ reactivacion.direccion_establecimiento }}"
+                                data-telefono="{{ reactivacion.telefono }}"
+                            >
+                                <strong>{{ reactivacion.cedula_ruc }}</strong>
+                                <span>{{ reactivacion.nombre_establecimiento }}</span>
+                            </button>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="estado-vacio">
+                        <strong>No hay gestiones de reactivación.</strong>
+                        <span>Seleccione tipo de gestión REACTIVACION al crear una inscripción para verla aquí.</span>
+                    </div>
+                {% endif %}
+            </aside>
+
+            <section class="reactivacion-formulario" aria-labelledby="titulo-formulario-reactivacion">
+                <header class="reactivacion-formulario__encabezado">
+                    <h3 id="titulo-formulario-reactivacion">Formulario de Reactivación</h3>
+                    <label>
+                        <span>Informe N°:</span>
+                        <input type="text" data-reactivacion-campo="informe">
+                    </label>
+                    <label>
+                        <span>Fecha de Informe:</span>
+                        <input type="date" data-reactivacion-campo="fechaInforme">
+                    </label>
+                </header>
+
+                <div class="reactivacion-tabs" role="tablist" aria-label="Partes del formulario de reactivación">
+                    <button class="reactivacion-tab reactivacion-tab--activo" type="button" role="tab" id="tab-reactivacion-parte-1" aria-controls="panel-reactivacion-parte-1" aria-selected="true" data-reactivacion-tab="parte-1">PARTE 1</button>
+                    <button class="reactivacion-tab" type="button" role="tab" id="tab-reactivacion-parte-2" aria-controls="panel-reactivacion-parte-2" aria-selected="false" data-reactivacion-tab="parte-2">PARTE 2</button>
+                </div>
+
+                <div class="reactivacion-formulario__grid reactivacion-panel reactivacion-panel--activo" role="tabpanel" id="panel-reactivacion-parte-1" aria-labelledby="tab-reactivacion-parte-1" data-reactivacion-panel="parte-1">
+                    <label class="campo-formulario">
+                        <span>No. de identificación:</span>
+                        <input type="text" data-reactivacion-campo="identificacion">
+                    </label>
+                    <label class="campo-formulario">
+                        <span>Fecha:</span>
+                        <input type="date" data-reactivacion-campo="fecha">
+                    </label>
+                    <label class="campo-formulario campo-formulario--reactivacion-doble">
+                        <span>Empleador o Razón Social:</span>
+                        <input type="text" data-reactivacion-campo="empleador" readonly>
+                    </label>
+                    <label class="campo-formulario campo-formulario--reactivacion-doble">
+                        <span>Nombre Comercial:</span>
+                        <input type="text" data-reactivacion-campo="establecimiento" readonly>
+                    </label>
+                    <label class="campo-formulario campo-formulario--reactivacion-triple">
+                        <span>Dirección:</span>
+                        <input type="text" data-reactivacion-campo="direccion" readonly>
+                    </label>
+                    <label class="campo-formulario">
+                        <span>Tel. Empresa:</span>
+                        <input type="text" data-reactivacion-campo="telefono">
+                    </label>
+                    <label class="campo-formulario campo-formulario--reactivacion-doble">
+                        <span>Nombre del Representante Legal:</span>
+                        <input type="text" data-reactivacion-campo="representante" readonly>
+                    </label>
+                    <label class="campo-formulario">
+                        <span>Cédula del Representante Legal:</span>
+                        <input type="text" data-reactivacion-campo="cedulaRepresentante" readonly>
+                    </label>
+                    <fieldset class="reactivacion-checks reactivacion-checks--condicionado">
+                        <legend>Condicionado:</legend>
+                        <label><input type="radio" name="condicion-reactivacion" value="si"> Sí</label>
+                        <label><input type="radio" name="condicion-reactivacion" value="no"> No</label>
+                        <label class="reactivacion-checks__fecha">
+                            <span>Cerrado:</span>
+                            <input type="date" data-reactivacion-campo="fechaCierre">
+                        </label>
+                    </fieldset>
+
+                    <h4 class="reactivacion-seccion">I- INVESTIGACION INTERNA</h4>
+                    <label class="campo-formulario">
+                        <span>A- Fecha de inscripción:</span>
+                        <input type="date" data-reactivacion-campo="fechaInscripcion">
+                    </label>
+                    <label class="campo-formulario">
+                        <span>Última factura:</span>
+                        <input type="text" data-reactivacion-campo="ultimaFactura">
+                    </label>
+                    <label class="campo-formulario">
+                        <span>C.I.P. (P. Natural):</span>
+                        <input type="text" data-reactivacion-campo="cip" readonly>
+                    </label>
+                    <label class="campo-formulario campo-formulario--reactivacion-doble">
+                        <span>R.U.C. (P. Jurídica):</span>
+                        <input type="text" data-reactivacion-campo="ruc" readonly>
+                    </label>
+                    <h4 class="reactivacion-seccion">MOROSIDAD</h4>
+                    <label class="campo-formulario">
+                        <span>Periodo:</span>
+                        <input type="text" data-reactivacion-campo="periodo">
+                    </label>
+                    <label class="campo-formulario campo-formulario--reactivacion-triple">
+                        <span>Tipo de facturación:</span>
+                        <input type="text" data-reactivacion-campo="facturacionMorosa">
+                    </label>
+                    <label class="campo-formulario">
+                        <span>Monto C.S.S. B/.</span>
+                        <input type="number" step="0.01" data-reactivacion-campo="css">
+                    </label>
+                    <label class="campo-formulario">
+                        <span>Monto S.E. / I.R.</span>
+                        <input type="number" step="0.01" data-reactivacion-campo="seIr">
+                    </label>
+                    <label class="campo-formulario campo-formulario--reactivacion-doble">
+                        <span>TOTAL B/.</span>
+                        <input type="number" step="0.01" data-reactivacion-campo="total">
+                    </label>
+
+                    <h4 class="reactivacion-seccion">RESULTADO DE INVESTIGACIÓN</h4>
+                    <label class="campo-formulario campo-formulario--reactivacion-completo">
+                        <span>Dirección:</span>
+                        <input type="text" data-reactivacion-campo="direccionResultado" readonly>
+                    </label>
+                    <fieldset class="reactivacion-checks reactivacion-checks--binario">
+                        <legend>Localizado:</legend>
+                        <label><input type="radio" name="localizado-reactivacion" value="si"> Sí</label>
+                        <label><input type="radio" name="localizado-reactivacion" value="no"> No</label>
+                    </fieldset>
+                    <fieldset class="reactivacion-checks reactivacion-checks--binario">
+                        <legend>Nueva dirección:</legend>
+                        <label><input type="radio" name="nueva-direccion-reactivacion" value="si"> Sí</label>
+                        <label><input type="radio" name="nueva-direccion-reactivacion" value="no"> No</label>
+                    </fieldset>
+                    <label class="campo-formulario campo-formulario--reactivacion-doble" data-reactivacion-direccion-actual hidden>
+                        <span>Dirección actual:</span>
+                        <input type="text" data-reactivacion-campo="direccionActual">
+                    </label>
+
+                    <h4 class="reactivacion-seccion">CIERRE O INACTIVIDAD</h4>
+                    <fieldset class="reactivacion-checks reactivacion-checks--binario">
+                        <legend>Patrono activo:</legend>
+                        <label><input type="radio" name="patrono-activo-reactivacion" value="si"> Sí</label>
+                        <label><input type="radio" name="patrono-activo-reactivacion" value="no"> No</label>
+                    </fieldset>
+                    <fieldset class="reactivacion-checks reactivacion-checks--binario campo-formulario--reactivacion-doble">
+                        <legend>Tipo de inactividad:</legend>
+                        <label><input type="radio" name="tipo-inactividad-reactivacion" value="temporal"> Temporal</label>
+                        <label><input type="radio" name="tipo-inactividad-reactivacion" value="definitiva"> Definitiva</label>
+                    </fieldset>
+                    <label class="campo-formulario">
+                        <span>Fecha de cese:</span>
+                        <input type="date" data-reactivacion-campo="fechaCese">
+                    </label>
+                    <label class="campo-formulario">
+                        <span>Fecha de presentación:</span>
+                        <input type="date" data-reactivacion-campo="presentacion">
+                    </label>
+                    <h4 class="reactivacion-seccion reactivacion-seccion--neutra">ÚLTIMA PLANILLA</h4>
+                    <label class="campo-formulario">
+                        <span>Número de empleados:</span>
+                        <input type="number" data-reactivacion-campo="empleados">
+                    </label>
+                    <label class="campo-formulario">
+                        <span>Monto de la planilla:</span>
+                        <input type="number" step="0.01" data-reactivacion-campo="montoPlanilla">
+                    </label>
+                    <fieldset class="reactivacion-checks reactivacion-checks--binario campo-formulario--reactivacion-doble">
+                        <legend>Sancionar:</legend>
+                        <label><input type="radio" name="sancionar-reactivacion" value="si"> Sí</label>
+                        <label><input type="radio" name="sancionar-reactivacion" value="no"> No</label>
+                    </fieldset>
+                    <label class="campo-formulario campo-formulario--reactivacion-completo">
+                        <span>Artículos:</span>
+                        <textarea data-reactivacion-campo="articulos"></textarea>
+                    </label>
+
+                </div>
+
+                <div class="reactivacion-formulario__grid reactivacion-panel" role="tabpanel" id="panel-reactivacion-parte-2" aria-labelledby="tab-reactivacion-parte-2" data-reactivacion-panel="parte-2" hidden>
+                    <h4 class="reactivacion-seccion">III. RESULTADOS</h4>
+                    <label class="campo-formulario campo-formulario--reactivacion-completo">
+                        <span>Resultado:</span>
+                        <textarea data-reactivacion-campo="resultado" placeholder="Ingrese resultado de la reactivación"></textarea>
+                    </label>
+                    <label class="campo-formulario campo-formulario--reactivacion-doble">
+                        <span>Agente administrativo:</span>
+                        <input type="text" data-reactivacion-campo="agenteAdministrativo">
+                    </label>
+                    <label class="campo-formulario campo-formulario--reactivacion-doble">
+                        <span>Sub-agente administrativo:</span>
+                        <input type="text" data-reactivacion-campo="subAgenteAdministrativo">
+                    </label>
+                    <label class="campo-formulario campo-formulario--reactivacion-doble">
+                        <span>Investigador(a):</span>
+                        <input type="text" data-reactivacion-campo="investigador">
+                    </label>
+
+                    <h4 class="reactivacion-seccion">IV. RECOMENDACIONES - PRODUCTO DE LAS INVESTIGACIONES</h4>
+                    <fieldset class="reactivacion-seleccion-multiple">
+                        <legend>Trasladar copia a:</legend>
+                        <div class="reactivacion-opciones-grid">
+                            <label><input type="checkbox" data-reactivacion-campo="trasladoArchivo"> Archivo</label>
+                            <label><input type="checkbox" data-reactivacion-campo="trasladoPlanillaComplementaria"> Sección de Planilla Complementaria</label>
+                            <label><input type="checkbox" data-reactivacion-campo="trasladoInscripcion"> Depto. de Inscripción</label>
+                            <label><input type="checkbox" data-reactivacion-campo="trasladoDenunciasSanciones"> Denuncias y Sanciones</label>
+                        </div>
+                    </fieldset>
+                    <label class="campo-formulario campo-formulario--reactivacion-completo">
+                        <span>Motivo del traslado:</span>
+                        <textarea data-reactivacion-campo="motivoTraslado"></textarea>
+                    </label>
+
+                    <h4 class="reactivacion-seccion">V. PERÍODOS AFECTADOS</h4>
+                    <div class="reactivacion-periodos">
+                        <div class="reactivacion-periodos__cabecera" aria-hidden="true">
+                            <span></span>
+                            <span>Período</span>
+                            <span>B/.</span>
+                        </div>
+                        <div class="reactivacion-periodos__fila">
+                            <span>1. Eliminar deuda improcedente</span>
+                            <input type="text" aria-label="Período para eliminar deuda improcedente" data-reactivacion-campo="periodoEliminarDeuda">
+                            <input type="number" step="0.01" aria-label="Monto para eliminar deuda improcedente" data-reactivacion-campo="montoEliminarDeuda">
+                        </div>
+                        <div class="reactivacion-periodos__fila">
+                            <span>2. Proceder al cobro</span>
+                            <input type="text" aria-label="Período para proceder al cobro" data-reactivacion-campo="periodoProcederCobro">
+                            <input type="number" step="0.01" aria-label="Monto para proceder al cobro" data-reactivacion-campo="montoProcederCobro">
+                        </div>
+                        <div class="reactivacion-periodos__fila">
+                            <span>3. Otros</span>
+                            <input type="text" aria-label="Otros períodos afectados" data-reactivacion-campo="periodoOtros">
+                            <input type="number" step="0.01" aria-label="Monto de otros períodos afectados" data-reactivacion-campo="montoOtrosPeriodos">
+                        </div>
+                    </div>
+
+                    <h4 class="reactivacion-seccion">VI. DOCUMENTOS ADJUNTOS</h4>
+                    <fieldset class="reactivacion-seleccion-multiple">
+                        <legend>Seleccione los documentos adjuntos:</legend>
+                        <div class="reactivacion-opciones-grid">
+                            <label><input type="checkbox" data-reactivacion-campo="documentoDatosGenerales"> Datos generales</label>
+                            <label><input type="checkbox" data-reactivacion-campo="documentoCalculoPrestaciones"> Cálculo de prestaciones laborales</label>
+                            <label><input type="checkbox" data-reactivacion-campo="documentoConsultaFacturacion"> Consulta masiva de facturación</label>
+                            <label><input type="checkbox" data-reactivacion-campo="documentoPlanillaRecibo"> Copia de planilla preelaborada y recibo de pago</label>
+                            <label><input type="checkbox" data-reactivacion-campo="documentoCertificacionDeuda"> Certificación de deuda</label>
+                            <label><input type="checkbox" data-reactivacion-campo="documentoOtros"> Otros</label>
+                        </div>
+                    </fieldset>
+
+                    <h4 class="reactivacion-seccion">VII. OTRAS RECOMENDACIONES Y/O OBSERVACIONES</h4>
+                    <label class="campo-formulario campo-formulario--reactivacion-completo">
+                        <span>Observaciones:</span>
+                        <textarea class="reactivacion-textarea--amplia" data-reactivacion-campo="otrasRecomendaciones" placeholder="Sea breve, preciso y conciso"></textarea>
+                    </label>
+                </div>
+
+                <div class="acciones-formulario">
+                    <p class="reactivacion-guardado-estado" data-reactivacion-estado aria-live="polite"></p>
+                    <button class="boton-formulario boton-formulario--guardar" type="button" data-accion="guardar-reactivacion">
+                        {% include "gestion/iconos.html" with icono="guardar" %}
+                        <span data-reactivacion-guardar-texto>Guardar</span>
+                    </button>
+                    <button class="boton-formulario boton-formulario--reporte" type="button" data-accion="generar-reporte-reactivacion">
+                        {% include "gestion/iconos.html" with icono="impresora" %}
+                        <span>Reporte</span>
+                    </button>
+                    <button class="boton-formulario boton-formulario--salir" type="button" data-accion="cerrar-reporte">
+                        {% include "gestion/iconos.html" with icono="prohibido" %}
+                        Salir
+                    </button>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+{{ reactivaciones_datos|json_script:"reactivaciones-datos" }}
+{{ inactividades_datos|json_script:"inactividades-datos" }}
+
+<div class="modal-reporte" data-reporte-reactivacion aria-hidden="true">
+    <div class="modal-reporte__panel" role="dialog" aria-modal="true" aria-labelledby="titulo-reporte-reactivacion">
+        <header class="modal-reporte__barra">
+            <div>
+                <span>Vista previa</span>
+                <h2 id="titulo-reporte-reactivacion">Informe de reactivación</h2>
+            </div>
+            <div class="modal-reporte__acciones">
+                <button type="button" class="boton-modal boton-modal--primario" data-accion="imprimir-reporte">
+                    {% include "gestion/iconos.html" with icono="impresora" %}
+                    Imprimir / PDF
+                </button>
+                <button type="button" class="boton-modal" data-accion="cerrar-reporte">Cerrar</button>
+            </div>
+        </header>
+
+        <div class="visor-reporte reporte-reactivacion-documento">
+            <article class="hoja-reporte hoja-reactivacion">
+                <header class="reactivacion-reporte__encabezado">
+                    <div class="reporte-sello">C.S.S.</div>
+                    <div>
+                        <strong>CAJA DE SEGURO SOCIAL</strong>
+                        <span>DIRECCIÓN NACIONAL DE INGRESOS</span>
+                        <span>DEPARTAMENTO DE INVESTIGACIÓN DE INGRESOS</span>
+                        <h3>SECCIÓN DE INVESTIGACIONES DE EMPRESAS</h3>
+                        <p>INFORME N°: <b data-reporte-reactivacion="informe"></b></p>
+                    </div>
+                    <strong>Anexo N° 9</strong>
+                </header>
+
+                <section class="reactivacion-reporte__datos-generales">
+                    <p><strong>Tipo de investigación</strong><span>Reactivación</span></p>
+                    <p><strong>Código</strong><span>43</span></p>
+                    <p><strong>Solicitado por</strong><span>Agencia de Boquete</span></p>
+                    <p><strong>Fecha</strong><span data-reporte-reactivacion="fechaInforme"></span></p>
+                    <p><strong>Fecha de operación</strong><span data-reporte-reactivacion="fecha"></span></p>
+                    <p><strong>Empleador (Razón Social)</strong><span data-reporte-reactivacion="empleador"></span></p>
+                    <p><strong>N° Ident.</strong><span data-reporte-reactivacion="identificacion"></span></p>
+                    <p><strong>Nombre comercial</strong><span data-reporte-reactivacion="establecimiento"></span></p>
+                    <p><strong>Teléfono</strong><span data-reporte-reactivacion="telefono"></span></p>
+                    <p><strong>Representante legal</strong><span data-reporte-reactivacion="representante"></span></p>
+                    <p><strong>Cédula</strong><span data-reporte-reactivacion="cedulaRepresentante"></span></p>
+                    <p class="reactivacion-reporte__ancho"><strong>Dirección</strong><span data-reporte-reactivacion="direccion"></span></p>
+                </section>
+
+                <h4 class="reactivacion-reporte__seccion">I. INVESTIGACIÓN INTERNA</h4>
+                <section class="reactivacion-reporte__grid">
+                    <p><strong>Fecha de inscripción</strong><span data-reporte-reactivacion="fechaInscripcion"></span></p>
+                    <p><strong>Última factura</strong><span data-reporte-reactivacion="ultimaFactura"></span></p>
+                    <p><strong>Condicionado</strong><span>Sí <i data-reporte-reactivacion="condicionSi"></i> No <i data-reporte-reactivacion="condicionNo"></i></span></p>
+                    <p><strong>Cerrado</strong><span data-reporte-reactivacion="fechaCierre"></span></p>
+                    <p><strong>C.I.P. (P. Natural)</strong><span data-reporte-reactivacion="cip"></span></p>
+                    <p><strong>R.U.C. (P. Jurídica)</strong><span data-reporte-reactivacion="ruc"></span></p>
+                </section>
+
+                <h4 class="reactivacion-reporte__subtitulo">MOROSIDAD</h4>
+                <section class="reactivacion-reporte__grid">
+                    <p><strong>Período</strong><span data-reporte-reactivacion="periodo"></span></p>
+                    <p><strong>Tipo de facturación</strong><span data-reporte-reactivacion="facturacionMorosa"></span></p>
+                    <p><strong>C.S.S. B/.</strong><span data-reporte-reactivacion="css"></span></p>
+                    <p><strong>S.E. / I.R. B/.</strong><span data-reporte-reactivacion="seIr"></span></p>
+                    <p><strong>Total B/.</strong><span data-reporte-reactivacion="total"></span></p>
+                </section>
+            </article>
+
+            <article class="hoja-reporte hoja-reactivacion">
+                <p class="reactivacion-reporte__continuacion">INFORME DE REACTIVACIÓN N° <span data-reporte-reactivacion="informe"></span></p>
+                <h4 class="reactivacion-reporte__seccion">II. RESULTADOS DE LA INVESTIGACIÓN</h4>
+                <section class="reactivacion-reporte__grid">
+                    <p class="reactivacion-reporte__ancho"><strong>Dirección</strong><span data-reporte-reactivacion="direccionResultado"></span></p>
+                    <p><strong>Localizado</strong><span>Sí <i data-reporte-reactivacion="localizadoSi"></i> No <i data-reporte-reactivacion="localizadoNo"></i></span></p>
+                    <p><strong>Nueva dirección</strong><span>Sí <i data-reporte-reactivacion="nuevaDireccionSi"></i> No <i data-reporte-reactivacion="nuevaDireccionNo"></i></span></p>
+                    <p class="reactivacion-reporte__ancho"><strong>Dirección actual</strong><span data-reporte-reactivacion="direccionActual"></span></p>
+                    <p><strong>Patrono activo</strong><span>Sí <i data-reporte-reactivacion="patronoActivoSi"></i> No <i data-reporte-reactivacion="patronoActivoNo"></i></span></p>
+                    <p><strong>Tipo de inactividad</strong><span data-reporte-reactivacion="tipoInactividad"></span></p>
+                    <p><strong>Fecha de cese</strong><span data-reporte-reactivacion="fechaCese"></span></p>
+                    <p><strong>Fecha de presentación</strong><span data-reporte-reactivacion="presentacion"></span></p>
+                </section>
+
+                <h4 class="reactivacion-reporte__subtitulo">ÚLTIMA PLANILLA</h4>
+                <section class="reactivacion-reporte__grid">
+                    <p><strong>N° de empleados</strong><span data-reporte-reactivacion="empleados"></span></p>
+                    <p><strong>Monto de la planilla B/.</strong><span data-reporte-reactivacion="montoPlanilla"></span></p>
+                    <p><strong>Sancionar</strong><span>Sí <i data-reporte-reactivacion="sancionarSi"></i> No <i data-reporte-reactivacion="sancionarNo"></i></span></p>
+                    <p class="reactivacion-reporte__ancho reactivacion-reporte__texto"><strong>Artículos</strong><span data-reporte-reactivacion="articulos"></span></p>
+                </section>
+
+                <h4 class="reactivacion-reporte__seccion">III. OBSERVACIONES DEL INVESTIGADOR</h4>
+                <div class="reactivacion-reporte__observacion" data-reporte-reactivacion="resultado"></div>
+            </article>
+
+            <article class="hoja-reporte hoja-reactivacion">
+                <p class="reactivacion-reporte__continuacion">INFORME DE REACTIVACIÓN N° <span data-reporte-reactivacion="informe"></span></p>
+                <h4 class="reactivacion-reporte__seccion">IV. RECOMENDACIONES PRODUCTO DE LAS INVESTIGACIONES</h4>
+                <section class="reactivacion-reporte__selecciones">
+                    <p><strong>Trasladar copia a:</strong></p>
+                    <p><i data-reporte-reactivacion="trasladoArchivo"></i> Archivo</p>
+                    <p><i data-reporte-reactivacion="trasladoInscripcion"></i> Depto. de Inscripción</p>
+                    <p><i data-reporte-reactivacion="trasladoPlanillaComplementaria"></i> Sección de Planilla Complementaria</p>
+                    <p><i data-reporte-reactivacion="trasladoDenunciasSanciones"></i> Denuncias y Sanciones</p>
+                </section>
+                <p class="reactivacion-reporte__campo-texto"><strong>Motivo del traslado</strong><span data-reporte-reactivacion="motivoTraslado"></span></p>
+
+                <h4 class="reactivacion-reporte__seccion">V. PERÍODOS AFECTADOS</h4>
+                <table class="reactivacion-reporte__tabla">
+                    <thead><tr><th>Concepto</th><th>Período</th><th>B/.</th></tr></thead>
+                    <tbody>
+                        <tr><td>1. Eliminar deuda improcedente</td><td data-reporte-reactivacion="periodoEliminarDeuda"></td><td data-reporte-reactivacion="montoEliminarDeuda"></td></tr>
+                        <tr><td>2. Proceder al cobro</td><td data-reporte-reactivacion="periodoProcederCobro"></td><td data-reporte-reactivacion="montoProcederCobro"></td></tr>
+                        <tr><td>3. Otros</td><td data-reporte-reactivacion="periodoOtros"></td><td data-reporte-reactivacion="montoOtrosPeriodos"></td></tr>
+                    </tbody>
+                </table>
+
+                <h4 class="reactivacion-reporte__seccion">VI. DOCUMENTOS ADJUNTOS</h4>
+                <section class="reactivacion-reporte__selecciones">
+                    <p><i data-reporte-reactivacion="documentoDatosGenerales"></i> Datos generales</p>
+                    <p><i data-reporte-reactivacion="documentoCalculoPrestaciones"></i> Cálculo de prestaciones laborales</p>
+                    <p><i data-reporte-reactivacion="documentoConsultaFacturacion"></i> Consulta masiva de facturación</p>
+                    <p><i data-reporte-reactivacion="documentoPlanillaRecibo"></i> Copia de planilla preelaborada y recibo de pago</p>
+                    <p><i data-reporte-reactivacion="documentoCertificacionDeuda"></i> Certificación de deuda</p>
+                    <p><i data-reporte-reactivacion="documentoOtros"></i> Otros</p>
+                </section>
+
+                <h4 class="reactivacion-reporte__seccion">VII. OTRAS RECOMENDACIONES Y/O OBSERVACIONES</h4>
+                <div class="reactivacion-reporte__observacion" data-reporte-reactivacion="otrasRecomendaciones"></div>
+
+                <footer class="reactivacion-reporte__firmas">
+                    <div><span data-reporte-reactivacion="investigador"></span><p>Nombre, N° y firma<br>Investigación de Ingresos</p></div>
+                    <div><span data-reporte-reactivacion="agenteAdministrativo"></span><p>Nombre y firma de Agente Administrativo(a)<br>Agencia de Boquete</p></div>
+                    <div><span data-reporte-reactivacion="subAgenteAdministrativo"></span><p>Nombre y firma de Sub-Agente Administrativo(a)<br>Agencia de Boquete</p></div>
+                </footer>
+                <p class="reactivacion-reporte__fecha-firma">Boquete, <span data-reporte-reactivacion="fechaFirma"></span></p>
+            </article>
+        </div>
     </div>
 </div>
 
@@ -417,6 +1217,111 @@
                     </button>
                 </div>
             </section>
+        </div>
+    </div>
+</div>
+
+<div class="modal-reporte" data-reporte-acta aria-hidden="true">
+    <div class="modal-reporte__panel modal-reporte__panel--acta" role="dialog" aria-modal="true" aria-labelledby="titulo-reporte-acta">
+        <header class="modal-reporte__barra">
+            <div>
+                <span>Vista previa</span>
+                <h2 id="titulo-reporte-acta">Acta de visita de inspección a empleadores</h2>
+            </div>
+            <div class="modal-reporte__acciones">
+                <button type="button" class="boton-modal boton-modal--primario" data-accion="imprimir-reporte">
+                    {% include "gestion/iconos.html" with icono="impresora" %}
+                    Imprimir / PDF
+                </button>
+                <button type="button" class="boton-modal" data-accion="cerrar-reporte">Cerrar</button>
+            </div>
+        </header>
+
+        <div class="visor-reporte">
+            <article class="hoja-reporte hoja-acta" data-hoja-reporte>
+                <header class="acta-encabezado">
+                    <div class="acta-sello" aria-hidden="true">
+                        {% include "gestion/iconos.html" with icono="institucion" %}
+                        <small>C.S.S.</small>
+                    </div>
+                    <div>
+                        <strong>CAJA DE SEGURO SOCIAL</strong>
+                        <span>DIRECCIÓN NACIONAL DE INGRESOS</span>
+                        <span>DEPARTAMENTO DE INVESTIGACIÓN DE INGRESOS</span>
+                        <h3>ACTA DE VISITA DE INSPECCIÓN A EMPLEADORES</h3>
+                    </div>
+                    <div></div>
+                </header>
+
+                <section class="acta-fecha">
+                    <p><strong>FECHA:</strong> <span data-acta="fecha"></span></p>
+                    <p><strong>HORA:</strong> <span></span></p>
+                </section>
+
+                <h4 class="acta-titulo-seccion acta-titulo-seccion--izquierda">REALIZAMOS INSPECCIÓN A LA EMPRESA, CUYAS GENERALES A CONTINUACIÓN DETALLAMOS:</h4>
+                <section class="acta-generales">
+                    <div class="acta-columna">
+                        <p><strong>N° DE EMPLEADOR</strong> <span data-acta="empleador"></span></p>
+                        <p><strong>RAZÓN SOCIAL</strong> <span data-acta="razon"></span></p>
+                        <p><strong>NOMBRE COMERCIAL</strong> <span data-acta="comercial"></span></p>
+                        <p><strong>N° DE R.U.C.</strong> <span data-acta="ruc"></span></p>
+                        <p><strong>DIRECCIÓN/UBICACIÓN</strong> <span data-acta="direccion"></span></p>
+                    </div>
+                    <div class="acta-columna">
+                        <p><strong>TEL. DE LA EMPRESA</strong> <span data-acta="telefono"></span></p>
+                        <p><strong>REPRESENTANTE LEGAL (RL)</strong> <span data-acta="representante"></span></p>
+                        <p><strong>CÉDULA O PASAPORTE</strong> <span data-acta="cedula"></span></p>
+                        <p><strong>CORREO ELECTRÓNICO</strong> <span></span></p>
+                        <p><strong>N° CELULAR (RL)</strong> <span data-acta="celular"></span></p>
+                    </div>
+                </section>
+
+                <h4 class="acta-titulo-seccion">MOTIVO DE LA INSPECCIÓN</h4>
+                <section class="acta-caja-texto acta-motivo"><strong>DESCRIPCIÓN</strong><span data-acta="motivo"></span></section>
+
+                <h4 class="acta-titulo-seccion">OBSERVACIÓN DE LA INSPECCIÓN</h4>
+                <section class="acta-lineas acta-observaciones" aria-label="Espacio para observaciones">
+                    {% for linea in "12345678" %}<span></span>{% endfor %}
+                </section>
+
+                <h4 class="acta-titulo-seccion">MARQUE CON X LOS DOCUMENTOS QUE DEBE PRESENTAR EL EMPLEADOR</h4>
+                <section class="acta-documentos">
+                    <div>
+                        <p><i></i><span>Contrato individual de trabajo (Adjuntar copia de cédula)</span></p>
+                        <p><i></i><span>Liquidación de empleados (adjuntar copia de cédula o pasaporte)</span></p>
+                        <p><i></i><span>Comprobantes de pagos de salarios de los meses:</span></p>
+                        <b></b><b></b>
+                    </div>
+                    <div>
+                        <p><i></i><span>Declaración de Renta y Anexo 03</span></p>
+                        <p><i></i><span>Listado de Asistencia de los meses:</span></p>
+                        <b></b><b></b><b></b>
+                    </div>
+                </section>
+
+                <h4 class="acta-titulo-seccion">TRÁMITES A REALIZAR POR EL EMPLEADOR EN LAS OFICINAS DE LA CAJA DE SEGURO SOCIAL</h4>
+                <section class="acta-tramites">
+                    <p><i></i><span>Ingresar PLANILLA COMPLEMENTARIA por los sistemas informáticos de la CSS, de los meses:</span><b></b></p>
+                    <p><i></i><span>Actualizar Datos Generales en el Departamento de Inscripción de Empleadores</span><b></b></p>
+                    <p><i></i><span>Requerimos que el (los) empleado(s) se apersone(n) para entrevista en nuestras oficinas:</span><b></b></p>
+                    <p><i></i><span>Presentar la NO Notificación del Cese de Operaciones:</span><b></b></p>
+                    <p class="acta-correo"><span>Los documentos solicitados pueden ser enviados al siguiente correo electrónico:</span><b></b></p>
+                    <div class="acta-cita">
+                        <span>Acudir al Departamento de investigación de Ingresos de la C.S.S.<br>Agencia Administrativa de la C.S.S. de Boquete el día:</span>
+                        <b></b><b></b><b></b><small>día</small><small>mes</small><small>año</small>
+                    </div>
+                </section>
+
+                <p class="acta-declaracion">Declaran los firmantes que toda la información y los datos suministrados en el presente documento son veraces y exactos. Texto Único de la Ley 51 de 2005, Orgánica de la Caja de Seguro Social, “Artículo 10. Inspección de lugares de trabajo y recaudación de información... Las personas sujetas al régimen de la Caja de Seguro Social están obligadas a suministrar a la Institución toda la información que esta requiera, a efectos de determinar el cumplimiento de las disposiciones de esta Ley y sus reglamentos, así como a dar las facilidades pertinentes para las inspecciones que sean necesarias.”</p>
+
+                <footer class="acta-firmas">
+                    <strong>Recibido por:</strong>
+                    <div><span></span><p>Nombre del Representante Legal o Persona autorizada</p><span></span><p>Firma del Representante Legal o Persona autorizada</p><span></span><p>Cédula / Pasaporte</p></div>
+                    <div><span></span><p>Nombre del Investigador de Ingresos &nbsp;&nbsp;&nbsp; N°. de Inv.</p><span></span><p>Firma del investigador de Ingresos</p></div>
+                </footer>
+
+                <p class="acta-nota"><strong>NOTA IMPORTANTE:</strong> A partir de la fecha, tiene 3 (tres) días hábiles para cumplir con la documentación solicitada por la Institución; transcurrido este término se aplicará sanción de conformidad con el Texto Único de la Ley 51 de 2005, Orgánica de la Caja de Seguro Social y el Reglamento General de Ingresos vigente de la Caja de Seguro Social.</p>
+            </article>
         </div>
     </div>
 </div>

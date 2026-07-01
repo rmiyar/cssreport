@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block titulo %}CSS Report{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/gestion.css' %}?v=20260602-7">
+    <link rel="stylesheet" href="{% static 'css/gestion.css' %}?v=20260630-30">
 </head>
 <body>
     <div class="contenedor-aplicacion {% if mostrar_barra_lateral == False %}contenedor-aplicacion--sin-lateral{% endif %}" data-contenedor>
@@ -20,7 +20,7 @@
             <nav class="navegacion-principal">
                 <a class="navegacion-principal__enlace {% if seccion_activa == 'gestion' %}activo{% endif %}" href="{% url 'gestion:panel' %}">
                     {% include "gestion/iconos.html" with icono="cuadricula" %}
-                    <span>Gestión</span>
+                    <span>investigacion</span>
                 </a>
             </nav>
         </aside>
@@ -65,6 +65,6 @@
         </div>
     </div>
 
-    <script src="{% static 'js/gestion.js' %}?v=20260602-7"></script>
+    <script src="{% static 'js/gestion.js' %}?v=20260630-30"></script>
 </body>
 </html>
