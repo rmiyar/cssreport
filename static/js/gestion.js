@@ -23,6 +23,7 @@ document.addEventListener("click", (evento) => {
 
 const modalReporte = document.querySelector("[data-reporte-detalle-empleados]");
 const modalActa = document.querySelector("[data-reporte-acta]");
+const modalPlanilla = document.querySelector("[data-modulo-planilla]");
 const modalOperativos = document.querySelector("[data-modulo-operativos]");
 const modalInactividad = document.querySelector("[data-modulo-inactividad]");
 const modalReporteOperativos = document.querySelector("[data-reporte-operativos]");
@@ -31,15 +32,39 @@ const modalModuloReactivacion = document.querySelector("[data-modulo-reactivacio
 const modalReporteReactivacion = document.querySelector("[data-reporte-reactivacion]");
 const modalCitacion = document.querySelector("[data-reporte-citacion]");
 const modalAvances = document.querySelector("[data-reporte-avances]");
+const modalPreliminar = document.querySelector("[data-modulo-preliminar]");
+const modalReportePreliminar = document.querySelector("[data-reporte-preliminar]");
+const modalMovimientos = document.querySelector("[data-modulo-movimientos]");
+const modalReporteMovimiento = document.querySelector("[data-reporte-movimiento]");
+const modalCalculoDias = document.querySelector("[data-modulo-calculo-dias]");
+const modalReporteCalculoDias = document.querySelector("[data-reporte-calculo-dias]");
+const modalCatalogoFeriados = document.querySelector("[data-catalogo-feriados]");
+const modalMaestro = document.querySelector("[data-modulo-maestro]");
+const modalReporteMaestro = document.querySelector("[data-reporte-maestro]");
+const modalInformeInscripcion = document.querySelector("[data-modulo-informe-inscripcion]");
 const botonAbrirReporte = document.querySelector("[data-accion='abrir-reporte-detalle-empleados']");
 const botonAbrirActa = document.querySelector("[data-accion='abrir-reporte-acta']");
+const botonAbrirPlanilla = document.querySelector("[data-accion='abrir-planilla']");
 const botonAbrirOperativos = document.querySelector("[data-accion='abrir-operativos']");
 const botonAbrirInactividad = document.querySelector("[data-accion='abrir-modulo-inactividad']");
+const botonGuardarPlanilla = document.querySelector("[data-accion='guardar-planilla']");
 const botonGuardarInactividad = document.querySelector("[data-accion='guardar-inactividad']");
 const botonGenerarPdfOperativos = document.querySelector("[data-accion='generar-pdf-operativos']");
 const botonAbrirCitacion = document.querySelector("[data-accion='abrir-reporte-citacion']");
 const botonAbrirAvances = document.querySelector("[data-accion='abrir-reporte-avances']");
 const botonAbrirReactivacion = document.querySelector("[data-accion='abrir-modulo-reactivacion']");
+const botonAbrirPreliminar = document.querySelector("[data-accion='abrir-preliminar']");
+const botonAbrirMovimientos = document.querySelector("[data-accion='abrir-movimientos']");
+const botonGuardarMovimientos = document.querySelector("[data-accion='guardar-movimientos']");
+const botonAbrirCalculoDias = document.querySelector("[data-accion='abrir-calculo-dias']");
+const formularioCalculoDias = document.querySelector("[data-calculo-dias-formulario]");
+const botonGuardarCalculoDias = document.querySelector("[data-accion='guardar-calculo-dias']");
+const botonVistaCalculoDias = document.querySelector("[data-accion='vista-imprimible-calculo']");
+const formularioFeriado = document.querySelector("[data-formulario-feriado]");
+const botonAbrirMaestro = document.querySelector("[data-accion='abrir-maestro']");
+const botonAbrirInformeInscripcion = document.querySelector("[data-accion='abrir-informe-inscripcion']");
+const scriptInformesInscripcion = document.querySelector("#informes-inscripcion-datos");
+const scriptCalculosInscripcion = document.querySelector("#calculos-inscripcion-datos");
 const botonGenerarReporteReactivacion = document.querySelector("[data-accion='generar-reporte-reactivacion']");
 const botonGenerarCitacion = document.querySelector("[data-accion='generar-reporte-citacion']");
 const botonesCerrarReporte = document.querySelectorAll("[data-accion='cerrar-reporte']");
@@ -53,6 +78,7 @@ const textoGuardarReactivacion = document.querySelector("[data-reactivacion-guar
 const estadoGuardarReactivacion = document.querySelector("[data-reactivacion-estado]");
 const scriptDatosReactivaciones = document.querySelector("#reactivaciones-datos");
 const scriptDatosInactividades = document.querySelector("#inactividades-datos");
+const scriptDatosPlanillas = document.querySelector("#planillas-datos");
 const busquedaOperativos = document.querySelector("[data-operativos-busqueda]");
 const totalOperativos = document.querySelector("[data-operativos-total]");
 const sinResultadosOperativos = document.querySelector("[data-operativos-sin-resultados]");
@@ -64,6 +90,10 @@ const estadoOperativos = document.querySelector("[data-operativos-estado]");
 const botonNuevoOperativo = document.querySelector("[data-accion='nuevo-operativo']");
 const botonCancelarOperativo = document.querySelector("[data-accion='cancelar-operativo']");
 const botonGuardarOperativo = document.querySelector("[data-accion='guardar-operativo']");
+const busquedaMovimientos = document.querySelector("[data-movimientos-busqueda]");
+const totalMovimientos = document.querySelector("[data-movimientos-total]");
+const sinResultadosMovimientos = document.querySelector("[data-movimientos-sin-resultados]");
+const estadoMovimientos = document.querySelector("[data-movimientos-estado]");
 const gruposRadioReactivacion = [
     "condicion-reactivacion",
     "localizado-reactivacion",
@@ -74,9 +104,18 @@ const gruposRadioReactivacion = [
 ];
 let datosReactivaciones = {};
 let datosInactividades = {};
+let datosPlanillas = {};
+let planillaSeleccionadaId = null;
 let inactividadSeleccionadaId = null;
 let reactivacionSeleccionadaId = null;
 let modalActivo = null;
+let resultadoCalculoDias = null;
+let informeInscripcionSeleccionado = null;
+let datosInformesInscripcion = {};
+let datosCalculosInscripcion = {};
+
+try { datosInformesInscripcion = JSON.parse(scriptInformesInscripcion?.textContent || "{}"); } catch (error) { datosInformesInscripcion = {}; }
+try { datosCalculosInscripcion = JSON.parse(scriptCalculosInscripcion?.textContent || "{}"); } catch (error) { datosCalculosInscripcion = {}; }
 
 if (scriptDatosReactivaciones?.textContent) {
     try {
@@ -91,6 +130,14 @@ if (scriptDatosInactividades?.textContent) {
         datosInactividades = JSON.parse(scriptDatosInactividades.textContent);
     } catch (error) {
         datosInactividades = {};
+    }
+}
+
+if (scriptDatosPlanillas?.textContent) {
+    try {
+        datosPlanillas = JSON.parse(scriptDatosPlanillas.textContent);
+    } catch (error) {
+        datosPlanillas = {};
     }
 }
 
@@ -117,6 +164,269 @@ const escribirReportes = (selector, valor, reserva = "____________________") => 
     document.querySelectorAll(selector).forEach((elemento) => {
         elemento.textContent = valor || reserva;
     });
+};
+
+const formatearFechaPlanilla = (valor) => {
+    if (!valor) {
+        return "";
+    }
+    const [anio, mes, dia] = valor.split("-");
+    return anio && mes && dia ? `${dia}/${mes}/${anio}` : valor;
+};
+
+const escribirCampoPlanilla = (nombre, valor) => {
+    const campo = modalPlanilla?.querySelector(`[data-planilla-campo='${nombre}']`);
+    if (campo) {
+        campo.value = valor || "";
+    }
+};
+
+const escribirFilaPlanilla = (nombre, valor) => {
+    const campo = modalPlanilla?.querySelector(`[data-planilla-fila='${nombre}']`);
+    if (campo) {
+        campo.value = valor || "";
+    }
+};
+
+const registrosPlanillaHotelValle = [
+    ["4-242-118", "ANA CRISTINA BARRIA", "17/11/2025", "17/11/2025", "3.75", "30.00", "22", "660.00", "//", "660.00", "memo"],
+    ["4-321-554", "JOSE DANIEL MIRANDA", "20/11/2025", "20/11/2025", "4.00", "32.00", "22", "704.00", "//", "704.00", "memo"],
+    ["4-155-902", "MARTA ELENA CASTILLO", "01/12/2025", "01/12/2025", "3.50", "28.00", "24", "672.00", "//", "672.00", "memo"],
+    ["8-888-114", "CARLOS ALBERTO RUIZ", "03/12/2025", "03/12/2025", "4.25", "34.00", "24", "816.00", "//", "816.00", "memo"],
+    ["4-602-771", "LUIS ENRIQUE SANTAMARIA", "08/12/2025", "08/12/2025", "3.25", "26.00", "26", "676.00", "//", "676.00", "memo"],
+    ["4-498-220", "MELISSA MARIE GONZALEZ", "15/12/2025", "15/12/2025", "3.90", "31.20", "24", "748.80", "//", "748.80", "memo"],
+    ["8-421-908", "ROBERTO ANTONIO VEGA", "05/01/2026", "05/01/2026", "4.10", "32.80", "22", "721.60", "//", "721.60", "memo"],
+    ["4-711-336", "ELISA MARIA MORENO", "12/01/2026", "12/01/2026", "3.80", "30.40", "22", "668.80", "//", "668.80", "memo"],
+    ["4-280-645", "RAFAEL EDUARDO PINZON", "19/01/2026", "19/01/2026", "4.50", "36.00", "20", "720.00", "//", "720.00", "memo"],
+    ["8-707-215", "PATRICIA ISABEL LOPEZ", "02/02/2026", "02/02/2026", "3.60", "28.80", "20", "576.00", "//", "576.00", "memo"],
+];
+
+const normalizarPlanilla = (valor) => String(valor || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("es");
+
+const esHotelValleDelRio = (datos) => {
+    const texto = normalizarPlanilla(`${datos.establecimiento} ${datos.razon}`);
+    return texto.includes("hotel valle del rio");
+};
+
+const filasTablaPlanilla = () => [...(modalPlanilla?.querySelectorAll("[data-planilla-cuerpo] tr") || [])];
+
+const limpiarFilasPlanilla = () => {
+    filasTablaPlanilla().forEach((fila) => {
+        fila.querySelectorAll("input").forEach((campo) => {
+            campo.value = "";
+        });
+    });
+};
+
+const escribirResumenPlanilla = (nombre, valor) => {
+    const campo = modalPlanilla?.querySelector(`[data-planilla-resumen='${nombre}']`);
+    if (campo) {
+        campo.value = valor ?? "";
+    }
+};
+
+const dineroPlanilla = (valor) => Number(valor || 0).toFixed(2);
+
+const llenarRegistrosPlanilla = (registros) => {
+    limpiarFilasPlanilla();
+    filasTablaPlanilla().forEach((fila, indice) => {
+        const registro = registros[indice];
+        if (!registro) {
+            return;
+        }
+        fila.querySelectorAll("input").forEach((campo, posicion) => {
+            campo.value = registro[posicion] || "";
+        });
+    });
+
+    const totalSalarios = registros.reduce((total, registro) => total + Number(registro[7] || 0), 0);
+    escribirResumenPlanilla("salariosOmitidos", dineroPlanilla(totalSalarios));
+    escribirResumenPlanilla("seguroSocial", dineroPlanilla(totalSalarios * 0.23));
+    escribirResumenPlanilla("entrevistados", String(registros.length));
+    escribirResumenPlanilla("omitidos", String(registros.length));
+};
+
+const llenarRegistroBasePlanilla = (datos) => {
+    limpiarFilasPlanilla();
+    escribirFilaPlanilla("cedula", datos.cedula);
+    escribirFilaPlanilla("nombre", datos.razon || datos.establecimiento);
+    escribirFilaPlanilla("inicio", datos.fecha);
+    escribirFilaPlanilla("salario", datos.salario);
+    escribirFilaPlanilla("fechaSipe", "//");
+    escribirFilaPlanilla("notas", "memo");
+    escribirResumenPlanilla("salariosOmitidos", datos.salario || "0.00");
+    escribirResumenPlanilla("seguroSocial", dineroPlanilla(Number(datos.salario || 0) * 0.23));
+    escribirResumenPlanilla("entrevistados", datos.entrevistados || "0");
+    escribirResumenPlanilla("omitidos", "");
+};
+
+const datosPlanillaDesdeFormulario = () => ({
+    id: "",
+    fecha: formatearFechaPlanilla(obtenerValorCampo("id_fecha_operacion")),
+    fechaIso: obtenerValorCampo("id_fecha_operacion"),
+    sipe: obtenerValorCampo("id_numero_sipe"),
+    mainframe: obtenerValorCampo("id_numero_mainframe"),
+    establecimiento: obtenerValorCampo("id_nombre_establecimiento"),
+    razon: obtenerValorCampo("id_empleador_razon_social"),
+    cedula: obtenerValorCampo("id_cedula_ruc"),
+    entrevistados: obtenerValorCampo("id_numero_entrevistados"),
+    salario: obtenerValorCampo("id_monto_salarios"),
+});
+
+const datosPlanillaDesdeItem = (item) => ({
+    id: item.dataset.id || "",
+    fecha: item.dataset.fechaTexto || formatearFechaPlanilla(item.dataset.fecha || ""),
+    fechaIso: item.dataset.fecha || "",
+    sipe: item.dataset.sipe || "",
+    mainframe: item.dataset.mainframe || "",
+    establecimiento: item.dataset.establecimiento || "",
+    razon: item.dataset.razon || "",
+    cedula: item.dataset.cedula || "",
+    entrevistados: item.dataset.entrevistados || "",
+    salario: item.dataset.salario || "",
+});
+
+const cargarPlanilla = (datos) => {
+    escribirCampoPlanilla("fecha", datos.fecha);
+    escribirCampoPlanilla("establecimiento", datos.establecimiento);
+    escribirCampoPlanilla("razon", datos.razon);
+    escribirCampoPlanilla("sipe", datos.sipe);
+    escribirCampoPlanilla("mainframe", datos.mainframe);
+
+    if (datos.id && datosPlanillas[datos.id]) {
+        cargarPlanillaGuardada(datosPlanillas[datos.id]);
+    } else if (esHotelValleDelRio(datos)) {
+        llenarRegistrosPlanilla(registrosPlanillaHotelValle);
+    } else {
+        llenarRegistroBasePlanilla(datos);
+    }
+};
+
+const seleccionarPlanilla = (item) => {
+    modalPlanilla?.querySelectorAll("[data-planilla-item]").forEach((boton) => {
+        boton.classList.toggle("activo", boton === item);
+    });
+    planillaSeleccionadaId = item.dataset.id || null;
+    cargarPlanilla(datosPlanillaDesdeItem(item));
+    mostrarEstadoPlanilla("");
+};
+
+const completarModuloPlanilla = () => {
+    const datosFormulario = datosPlanillaDesdeFormulario();
+    const itemsPlanilla = [...(modalPlanilla?.querySelectorAll("[data-planilla-item]") || [])];
+    const itemHotelValle = itemsPlanilla.find((item) => esHotelValleDelRio(datosPlanillaDesdeItem(item)));
+    const primerItem = itemsPlanilla[0];
+
+    if (datosFormulario.establecimiento || datosFormulario.razon || datosFormulario.cedula) {
+        modalPlanilla?.querySelectorAll("[data-planilla-item]").forEach((boton) => boton.classList.remove("activo"));
+        planillaSeleccionadaId = null;
+        cargarPlanilla(datosFormulario);
+        mostrarEstadoPlanilla("Seleccione un establecimiento del listado para guardar.", "error");
+        return;
+    }
+
+    if (itemHotelValle) {
+        seleccionarPlanilla(itemHotelValle);
+        return;
+    }
+
+    if (primerItem) {
+        seleccionarPlanilla(primerItem);
+    }
+};
+
+const valoresResumenPlanilla = () => ({
+    salariosOmitidos: modalPlanilla?.querySelector("[data-planilla-resumen='salariosOmitidos']")?.value || "",
+    seguroSocial: modalPlanilla?.querySelector("[data-planilla-resumen='seguroSocial']")?.value || "",
+    entrevistados: modalPlanilla?.querySelector("[data-planilla-resumen='entrevistados']")?.value || "",
+    omitidos: modalPlanilla?.querySelector("[data-planilla-resumen='omitidos']")?.value || "",
+});
+
+const filasGuardablesPlanilla = () => filasTablaPlanilla()
+    .map((fila) => [...fila.querySelectorAll("input")].map((campo) => campo.value.trim()))
+    .filter((fila) => fila.some(Boolean));
+
+const datosActualesPlanilla = () => ({
+    campos: {
+        fecha: modalPlanilla?.querySelector("[data-planilla-campo='fecha']")?.value || "",
+        establecimiento: modalPlanilla?.querySelector("[data-planilla-campo='establecimiento']")?.value || "",
+        razon: modalPlanilla?.querySelector("[data-planilla-campo='razon']")?.value || "",
+        sipe: modalPlanilla?.querySelector("[data-planilla-campo='sipe']")?.value || "",
+        mainframe: modalPlanilla?.querySelector("[data-planilla-campo='mainframe']")?.value || "",
+    },
+    filas: filasGuardablesPlanilla(),
+    notas: modalPlanilla?.querySelector(".planilla-notas textarea")?.value || "",
+    resumen: valoresResumenPlanilla(),
+});
+
+const cargarPlanillaGuardada = (datos) => {
+    const campos = datos.campos || {};
+    escribirCampoPlanilla("fecha", campos.fecha);
+    escribirCampoPlanilla("establecimiento", campos.establecimiento);
+    escribirCampoPlanilla("razon", campos.razon);
+    escribirCampoPlanilla("sipe", campos.sipe);
+    escribirCampoPlanilla("mainframe", campos.mainframe);
+    llenarRegistrosPlanilla(datos.filas || []);
+    if (datos.notas !== undefined) {
+        const notas = modalPlanilla?.querySelector(".planilla-notas textarea");
+        if (notas) {
+            notas.value = datos.notas;
+        }
+    }
+    const resumen = datos.resumen || {};
+    Object.entries(resumen).forEach(([nombre, valor]) => escribirResumenPlanilla(nombre, valor));
+};
+
+const mostrarEstadoPlanilla = (mensaje, tipo = "") => {
+    const estado = modalPlanilla?.querySelector("[data-planilla-estado]");
+    if (!estado) {
+        return;
+    }
+    estado.textContent = mensaje;
+    estado.className = `planilla-estado${tipo ? ` planilla-estado--${tipo}` : ""}`;
+};
+
+const guardarPlanilla = async () => {
+    const url = modalPlanilla?.dataset.guardarUrl;
+    const tokenCsrf = document.querySelector("[name='csrfmiddlewaretoken']")?.value;
+    if (!url || !tokenCsrf) {
+        return;
+    }
+    if (!planillaSeleccionadaId) {
+        mostrarEstadoPlanilla("Seleccione un establecimiento del listado antes de guardar.", "error");
+        return;
+    }
+
+    botonGuardarPlanilla.disabled = true;
+    mostrarEstadoPlanilla("Guardando planilla...");
+    try {
+        const datos = datosActualesPlanilla();
+        const respuesta = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": tokenCsrf,
+                "X-Requested-With": "XMLHttpRequest",
+            },
+            body: JSON.stringify({
+                inscripcion_id: planillaSeleccionadaId,
+                datos,
+            }),
+        });
+        const resultado = await respuesta.json();
+        if (!respuesta.ok || !resultado.ok) {
+            throw new Error(resultado.mensaje || "No fue posible guardar la planilla.");
+        }
+        datosPlanillas[planillaSeleccionadaId] = resultado.datos;
+        mostrarEstadoPlanilla(resultado.mensaje, "exito");
+    } catch (error) {
+        mostrarEstadoPlanilla(error.message || "No fue posible guardar la planilla.", "error");
+    } finally {
+        botonGuardarPlanilla.disabled = false;
+    }
 };
 
 const obtenerFechaCitacion = () => {
@@ -629,11 +939,729 @@ const completarReporteReactivacion = () => {
 };
 
 const abrirModalReporte = (modal, completar) => {
-    completar();
+    completar?.();
     modalActivo = modal;
     modalActivo?.classList.add("abierto");
     modalActivo?.setAttribute("aria-hidden", "false");
     document.body.classList.add("modal-abierto");
+};
+
+const completarPreliminar = () => {
+    const campoFecha = modalPreliminar?.querySelector("[data-preliminar-fecha]");
+    if (campoFecha && !campoFecha.value) {
+        const hoy = new Date();
+        const local = new Date(hoy.getTime() - hoy.getTimezoneOffset() * 60000);
+        campoFecha.value = local.toISOString().slice(0, 10);
+    }
+    filtrarPreliminar();
+};
+
+const seleccionarTipoPreliminar = (tipo) => {
+    const esFinal = tipo === "final";
+    modalPreliminar?.classList.toggle("preliminar--final", esFinal);
+    modalPreliminar?.querySelectorAll("[data-preliminar-tipo]").forEach((opcion) => {
+        const activo = opcion.dataset.preliminarTipo === tipo;
+        opcion.classList.toggle("preliminar-tipo__boton--activo", activo);
+        opcion.setAttribute("aria-pressed", String(activo));
+    });
+
+    const etiqueta = modalPreliminar?.querySelector("[data-preliminar-reporte-tipo]");
+    const descripcion = modalPreliminar?.querySelector("[data-preliminar-reporte-descripcion]");
+    if (etiqueta) {
+        etiqueta.textContent = esFinal ? "Preliminar final" : "Preliminar inicial";
+    }
+    if (descripcion) {
+        descripcion.textContent = esFinal
+            ? "Resultado actualizado después del trabajo realizado, con conclusión y causa pendiente."
+            : "Investigaciones asignadas al comenzar la jornada u operativo.";
+    }
+};
+
+const formatearFechaPreliminar = (valor) => {
+    if (!valor) {
+        return "//";
+    }
+    const [anio, mes, dia] = valor.split("-");
+    return anio && mes && dia ? `${dia}/${mes}/${anio}` : valor;
+};
+
+const generarReportePreliminar = (tipo) => {
+    if (!modalPreliminar || !modalReportePreliminar) {
+        return;
+    }
+
+    const esFinal = tipo === "final";
+    const filas = [...modalPreliminar.querySelectorAll("[data-preliminar-fila]")]
+        .filter((fila) => !fila.hidden);
+    const cabecera = modalReportePreliminar.querySelector("[data-documento-preliminar-cabecera]");
+    const cuerpo = modalReportePreliminar.querySelector("[data-documento-preliminar-cuerpo]");
+    const fechaValor = modalPreliminar.querySelector("[data-preliminar-fecha]")?.value || "";
+    const columnas = [
+        "N.º",
+        "Número de empleador",
+        "Empleador o razón social",
+        "Tipo de investigación",
+        "Ubicación (sector)",
+    ];
+    if (esFinal) {
+        columnas.push("Concluido", "De no haber concluido, indicar la causa");
+    }
+
+    const filaCabecera = document.createElement("tr");
+    columnas.forEach((texto) => {
+        const th = document.createElement("th");
+        th.textContent = texto;
+        filaCabecera.append(th);
+    });
+    cabecera.replaceChildren(filaCabecera);
+    cuerpo.replaceChildren();
+
+    filas.forEach((fila, indice) => {
+        const celdas = fila.cells;
+        const establecimiento = celdas[5]?.textContent.trim() || "";
+        const razon = celdas[6]?.textContent.trim() || "";
+        const patrono = razon && normalizarTextoPreliminar(razon) !== normalizarTextoPreliminar(establecimiento)
+            ? `${establecimiento} / ${razon}`
+            : establecimiento || razon;
+        const valores = [
+            indice + 1,
+            celdas[3]?.textContent.trim() || "",
+            patrono,
+            celdas[2]?.textContent.trim() || "",
+            celdas[7]?.textContent.trim() || "",
+        ];
+        if (esFinal) {
+            valores.push(
+                celdas[8]?.querySelector("input[type='checkbox']")?.checked ? "SÍ" : "NO",
+                celdas[9]?.textContent.trim() || "",
+            );
+        }
+        const filaReporte = document.createElement("tr");
+        valores.forEach((valor) => {
+            const td = document.createElement("td");
+            td.textContent = String(valor);
+            filaReporte.append(td);
+        });
+        cuerpo.append(filaReporte);
+    });
+
+    if (!filas.length) {
+        const filaVacia = document.createElement("tr");
+        const celda = document.createElement("td");
+        celda.colSpan = columnas.length;
+        celda.textContent = "No hay investigaciones que coincidan con los filtros seleccionados.";
+        filaVacia.append(celda);
+        cuerpo.append(filaVacia);
+    }
+
+    const titulo = esFinal ? "Preliminar final de investigaciones" : "Preliminar inicial de investigaciones";
+    modalReportePreliminar.querySelector("[data-documento-preliminar-titulo]").textContent = titulo;
+    modalReportePreliminar.querySelector("[data-documento-preliminar-subtitulo]").textContent = esFinal
+        ? "CUADRO DE INVESTIGACIONES Y RESULTADO PRELIMINAR FINAL"
+        : "CUADRO DE INVESTIGACIONES ASIGNADAS – PRELIMINAR INICIAL";
+    modalReportePreliminar.querySelector("[data-documento-preliminar-fecha]").textContent = formatearFechaPreliminar(fechaValor);
+    modalReportePreliminar.querySelector("[data-documento-preliminar-fecha-firma]").textContent = formatearFechaPreliminar(fechaValor);
+
+    ["primera", "segunda"].forEach((nombre) => {
+        const valor = modalPreliminar.querySelector(`[data-preliminar-firma='${nombre}']`)?.value.trim() || "";
+        modalReportePreliminar.querySelector(`[data-documento-preliminar-firma='${nombre}']`).textContent = valor;
+    });
+
+    const tiposPresentes = new Set(filas.map((fila) => fila.dataset.tipo));
+    modalReportePreliminar.querySelectorAll("[data-documento-tipo]").forEach((elemento) => {
+        const nombre = elemento.textContent.split(" (")[0];
+        elemento.textContent = `${nombre} (${tiposPresentes.has(elemento.dataset.documentoTipo) ? "X" : " "})`;
+    });
+
+    cerrarReporte();
+    abrirModalReporte(modalReportePreliminar);
+    window.print();
+};
+
+const normalizarTextoPreliminar = (valor) => String(valor || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("es")
+    .trim();
+
+const filtrarPreliminar = () => {
+    if (!modalPreliminar) {
+        return;
+    }
+
+    const obtenerFiltro = (nombre) => modalPreliminar.querySelector(`[data-preliminar-filtro='${nombre}']`);
+    const fechaDesde = obtenerFiltro("fecha-desde")?.value || "";
+    const fechaHasta = obtenerFiltro("fecha-hasta")?.value || "";
+    const tipo = obtenerFiltro("tipo")?.value || "";
+    const estado = obtenerFiltro("estado")?.value || "";
+    const numero = normalizarTextoPreliminar(obtenerFiltro("numero")?.value);
+    const patrono = normalizarTextoPreliminar(obtenerFiltro("patrono")?.value);
+    const mensaje = modalPreliminar.querySelector("[data-preliminar-filtros-estado]");
+    const sinResultados = modalPreliminar.querySelector("[data-preliminar-sin-resultados]");
+    const total = modalPreliminar.querySelector("[data-preliminar-total]");
+    const fechasInvalidas = [obtenerFiltro("fecha-desde"), obtenerFiltro("fecha-hasta")]
+        .some((campo) => campo?.validity?.badInput);
+    const rangoInvalido = fechaDesde && fechaHasta && fechaDesde > fechaHasta;
+
+    if (fechasInvalidas || rangoInvalido) {
+        mensaje.textContent = fechasInvalidas
+            ? "Introduzca una fecha válida."
+            : "La fecha inicial no puede ser posterior a la fecha final.";
+        mensaje.classList.add("preliminar-filtros__estado--error");
+        return;
+    }
+
+    mensaje.textContent = "";
+    mensaje.classList.remove("preliminar-filtros__estado--error");
+    let visibles = 0;
+
+    modalPreliminar.querySelectorAll("[data-preliminar-fila]").forEach((fila) => {
+        const fecha = fila.dataset.fecha || "";
+        const coincide = (!fechaDesde || (fecha && fecha >= fechaDesde))
+            && (!fechaHasta || (fecha && fecha <= fechaHasta))
+            && (!tipo || fila.dataset.tipo === tipo)
+            && (!estado || fila.dataset.estado === estado)
+            && (!numero || normalizarTextoPreliminar(fila.dataset.numero).includes(numero))
+            && (!patrono || normalizarTextoPreliminar(fila.dataset.patrono).includes(patrono));
+        fila.hidden = !coincide;
+        if (coincide) {
+            visibles += 1;
+        }
+    });
+
+    if (total) {
+        total.textContent = String(visibles);
+    }
+    if (sinResultados) {
+        sinResultados.hidden = visibles !== 0;
+    }
+};
+
+const filtrarMovimientos = () => {
+    const termino = String(busquedaMovimientos?.value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLocaleLowerCase("es")
+        .trim();
+    let visibles = 0;
+
+    modalMovimientos?.querySelectorAll("[data-movimiento-fila]").forEach((fila) => {
+        const texto = fila.textContent
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLocaleLowerCase("es");
+        const coincide = !termino || texto.includes(termino);
+        fila.hidden = !coincide;
+        if (coincide) {
+            visibles += 1;
+        }
+    });
+
+    if (totalMovimientos) {
+        totalMovimientos.textContent = String(visibles);
+    }
+    if (sinResultadosMovimientos) {
+        sinResultadosMovimientos.hidden = visibles !== 0;
+    }
+};
+
+const mostrarEstadoMovimientos = (mensaje, tipo = "") => {
+    if (!estadoMovimientos) {
+        return;
+    }
+    estadoMovimientos.textContent = mensaje;
+    estadoMovimientos.className = `movimientos-estado${tipo ? ` movimientos-estado--${tipo}` : ""}`;
+};
+
+const guardarMovimientos = async () => {
+    const url = modalMovimientos?.dataset.guardarUrl;
+    const tokenCsrf = document.querySelector("[name='csrfmiddlewaretoken']")?.value;
+    if (!url || !tokenCsrf || !botonGuardarMovimientos) {
+        return;
+    }
+
+    const registros = [...modalMovimientos.querySelectorAll("[data-movimiento-fila]")].map((fila) => ({
+        inscripcion_id: Number(fila.dataset.inscripcionId),
+        avance: fila.querySelector("[data-movimiento-avance]")?.value || "",
+    }));
+
+    botonGuardarMovimientos.disabled = true;
+    mostrarEstadoMovimientos("Guardando comentarios...");
+    try {
+        const respuesta = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": tokenCsrf,
+            },
+            body: JSON.stringify({ registros }),
+        });
+        const resultado = await respuesta.json();
+        if (!respuesta.ok || !resultado.ok) {
+            throw new Error(resultado.mensaje || "No fue posible guardar los avances.");
+        }
+        modalMovimientos.querySelectorAll("[data-movimiento-avance]").forEach((campo) => {
+            campo.classList.remove("movimiento-avance--modificado");
+        });
+        mostrarEstadoMovimientos(resultado.mensaje, "exito");
+    } catch (error) {
+        mostrarEstadoMovimientos(error.message || "No fue posible guardar los avances.", "error");
+    } finally {
+        botonGuardarMovimientos.disabled = false;
+    }
+};
+
+const generarReporteMovimiento = (fila) => {
+    if (!fila || !modalReporteMovimiento) {
+        return;
+    }
+
+    const celdas = fila.cells;
+    const escribir = (selector, valor) => {
+        const elemento = modalReporteMovimiento.querySelector(selector);
+        if (elemento) {
+            elemento.textContent = valor || "—";
+        }
+    };
+
+    escribir("[data-reporte-movimiento-fecha]", celdas[0]?.textContent.trim());
+    escribir("[data-reporte-movimiento-numero]", celdas[1]?.textContent.trim());
+    escribir("[data-reporte-movimiento-establecimiento]", celdas[2]?.textContent.trim());
+    escribir("[data-reporte-movimiento-razon]", celdas[3]?.textContent.trim());
+    escribir(
+        "[data-reporte-movimiento-avance]",
+        fila.querySelector("[data-movimiento-avance]")?.value.trim()
+            || "Sin comentarios de avance registrados.",
+    );
+    escribir("[data-reporte-movimiento-cedula]", celdas[5]?.textContent.trim());
+
+    cerrarReporte();
+    abrirModalReporte(modalReporteMovimiento);
+    window.print();
+};
+
+const estadoCalculoDias = (mensaje, tipo = "") => {
+    const elemento = modalCalculoDias?.querySelector("[data-calculo-dias-estado]");
+    if (!elemento) return;
+    elemento.textContent = mensaje;
+    elemento.className = `calculo-dias-estado${tipo ? ` calculo-dias-estado--${tipo}` : ""}`;
+};
+
+const datosFormularioCalculo = () => ({
+    inscripcion_id: Number(modalCalculoDias?.querySelector("[data-calculo-dias-expediente]")?.value || 0),
+    fecha_inicial: modalCalculoDias?.querySelector("[data-calculo-dias-inicial]")?.value || "",
+    fecha_final: modalCalculoDias?.querySelector("[data-calculo-dias-final]")?.value || "",
+});
+
+const validarCalculoDias = (requiereExpediente = false) => {
+    const datos = datosFormularioCalculo();
+    if (requiereExpediente && !datos.inscripcion_id) return "Seleccione el expediente donde se guardará el cálculo.";
+    if (!datos.fecha_inicial || !datos.fecha_final) return "Seleccione una fecha inicial y una fecha final.";
+    if (datos.fecha_inicial > datos.fecha_final) return "La fecha inicial no puede ser posterior a la fecha final.";
+    return "";
+};
+
+const renderizarCalculoDias = (resultado) => {
+    resultadoCalculoDias = resultado;
+    const cuerpo = modalCalculoDias.querySelector("[data-calculo-dias-cuerpo]");
+    const resumen = modalCalculoDias.querySelector("[data-calculo-dias-resumen]");
+    const valores = {
+        "[data-calculo-total]": resultado.total_dias,
+        "[data-calculo-habiles]": resultado.dias_habiles,
+        "[data-calculo-fines-semana]": resultado.fines_semana,
+        "[data-calculo-feriados]": resultado.feriados,
+    };
+    Object.entries(valores).forEach(([selector, valor]) => {
+        modalCalculoDias.querySelector(selector).textContent = String(valor);
+    });
+    cuerpo.replaceChildren();
+    resultado.detalle.forEach((item) => {
+        const fila = document.createElement("tr");
+        fila.dataset.condicion = item.condicion;
+        [item.fecha_texto, item.dia, item.condicion, item.motivo || "—"].forEach((valor) => {
+            const celda = document.createElement("td");
+            celda.textContent = valor;
+            fila.append(celda);
+        });
+        cuerpo.append(fila);
+    });
+    resumen.hidden = false;
+    botonGuardarCalculoDias.disabled = false;
+    botonVistaCalculoDias.disabled = false;
+};
+
+const solicitarCalculoDias = async (evento) => {
+    evento?.preventDefault();
+    const error = validarCalculoDias();
+    if (error) {
+        estadoCalculoDias(error, "error");
+        return;
+    }
+    const boton = formularioCalculoDias.querySelector("[data-accion='calcular-dias']");
+    boton.disabled = true;
+    estadoCalculoDias("Consultando el calendario de feriados...");
+    try {
+        const respuesta = await fetch(modalCalculoDias.dataset.calcularUrl, {
+            method: "POST",
+            headers: {"Content-Type": "application/json", "X-CSRFToken": document.querySelector("[name='csrfmiddlewaretoken']")?.value || ""},
+            body: JSON.stringify(datosFormularioCalculo()),
+        });
+        const resultado = await respuesta.json();
+        if (!respuesta.ok || !resultado.ok) throw new Error(resultado.mensaje || "No fue posible calcular el rango.");
+        renderizarCalculoDias(resultado);
+        estadoCalculoDias("Cálculo completado correctamente.", "exito");
+    } catch (errorSolicitud) {
+        estadoCalculoDias(errorSolicitud.message, "error");
+    } finally {
+        boton.disabled = false;
+    }
+};
+
+const guardarCalculoDias = async () => {
+    const error = validarCalculoDias(true);
+    if (error || !resultadoCalculoDias) {
+        estadoCalculoDias(error || "Calcule el rango antes de guardarlo.", "error");
+        return;
+    }
+    botonGuardarCalculoDias.disabled = true;
+    estadoCalculoDias("Guardando el resultado en el expediente...");
+    try {
+        const respuesta = await fetch(modalCalculoDias.dataset.guardarUrl, {
+            method: "POST",
+            headers: {"Content-Type": "application/json", "X-CSRFToken": document.querySelector("[name='csrfmiddlewaretoken']")?.value || ""},
+            body: JSON.stringify(datosFormularioCalculo()),
+        });
+        const resultado = await respuesta.json();
+        if (!respuesta.ok || !resultado.ok) throw new Error(resultado.mensaje || "No fue posible guardar el cálculo.");
+        estadoCalculoDias(`${resultado.mensaje} Registro #${resultado.calculo_id}.`, "exito");
+    } catch (errorSolicitud) {
+        estadoCalculoDias(errorSolicitud.message, "error");
+    } finally {
+        botonGuardarCalculoDias.disabled = false;
+    }
+};
+
+const abrirReporteCalculoDias = () => {
+    if (!resultadoCalculoDias) return;
+    const datos = datosFormularioCalculo();
+    const opcion = modalCalculoDias.querySelector("[data-calculo-dias-expediente]")?.selectedOptions[0];
+    const escribir = (selector, valor) => { modalReporteCalculoDias.querySelector(selector).textContent = valor; };
+    escribir("[data-reporte-calculo-expediente]", opcion?.dataset.establecimiento || opcion?.dataset.razon || "Sin seleccionar");
+    escribir("[data-reporte-calculo-numero]", opcion?.dataset.numero || "S/N");
+    escribir("[data-reporte-calculo-periodo]", `${formatearFechaPreliminar(datos.fecha_inicial)} al ${formatearFechaPreliminar(datos.fecha_final)}`);
+    escribir("[data-reporte-calculo-total]", resultadoCalculoDias.total_dias);
+    escribir("[data-reporte-calculo-habiles]", resultadoCalculoDias.dias_habiles);
+    escribir("[data-reporte-calculo-fines]", resultadoCalculoDias.fines_semana);
+    escribir("[data-reporte-calculo-feriados]", resultadoCalculoDias.feriados);
+    const cuerpo = modalReporteCalculoDias.querySelector("[data-reporte-calculo-cuerpo]");
+    cuerpo.replaceChildren();
+    resultadoCalculoDias.detalle.forEach((item) => {
+        const fila = document.createElement("tr");
+        [item.fecha_texto, item.dia, item.condicion, item.motivo || "—"].forEach((valor) => {
+            const celda = document.createElement("td"); celda.textContent = valor; fila.append(celda);
+        });
+        cuerpo.append(fila);
+    });
+    cerrarReporte();
+    abrirModalReporte(modalReporteCalculoDias);
+};
+
+const mostrarEstadoFeriados = (mensaje, tipo = "") => {
+    const elemento = modalCatalogoFeriados?.querySelector("[data-catalogo-feriados-estado]");
+    if (!elemento) return;
+    elemento.textContent = mensaje;
+    elemento.className = `catalogo-feriados-estado${tipo ? ` catalogo-feriados-estado--${tipo}` : ""}`;
+};
+
+const actualizarTotalFeriados = () => {
+    const total = modalCatalogoFeriados?.querySelectorAll("[data-feriado-fila][data-activo='true']").length || 0;
+    document.querySelectorAll("[data-total-feriados-activos]").forEach((elemento) => {
+        elemento.textContent = String(total);
+    });
+};
+
+const crearFilaFeriado = (feriado) => {
+    const fila = document.createElement("tr");
+    fila.dataset.feriadoFila = "";
+    fila.dataset.id = String(feriado.id);
+    fila.dataset.fecha = feriado.fecha;
+    fila.dataset.nombre = feriado.nombre;
+    fila.dataset.activo = String(feriado.activo);
+    const fecha = document.createElement("td"); fecha.dataset.feriadoCelda = "fecha"; fecha.textContent = feriado.fecha_texto;
+    const nombre = document.createElement("td"); nombre.dataset.feriadoCelda = "nombre"; nombre.textContent = feriado.nombre;
+    const estado = document.createElement("td"); estado.dataset.feriadoCelda = "estado";
+    const insignia = document.createElement("span");
+    insignia.className = `estado-feriado${feriado.activo ? " estado-feriado--activo" : ""}`;
+    insignia.textContent = feriado.activo ? "Activo" : "Inactivo";
+    estado.append(insignia);
+    const acciones = document.createElement("td"); acciones.className = "tabla-catalogo-feriados__acciones";
+    ["editar", "eliminar"].forEach((accion) => {
+        const boton = document.createElement("button"); boton.type = "button"; boton.dataset.accion = `${accion}-feriado`; boton.textContent = accion === "editar" ? "Editar" : "Eliminar"; acciones.append(boton);
+    });
+    fila.append(fecha, nombre, estado, acciones);
+    return fila;
+};
+
+const editarFeriado = (fila) => {
+    formularioFeriado.querySelector("[data-feriado-id]").value = fila.dataset.id;
+    formularioFeriado.querySelector("[data-feriado-fecha]").value = fila.dataset.fecha;
+    formularioFeriado.querySelector("[data-feriado-nombre]").value = fila.dataset.nombre;
+    formularioFeriado.querySelector("[data-feriado-activo]").checked = fila.dataset.activo === "true";
+    formularioFeriado.querySelector("[data-feriado-nombre]").focus();
+    mostrarEstadoFeriados(`Editando: ${fila.dataset.nombre}`);
+};
+
+const guardarFeriado = async (evento) => {
+    evento.preventDefault();
+    const fecha = formularioFeriado.querySelector("[data-feriado-fecha]").value;
+    const nombre = formularioFeriado.querySelector("[data-feriado-nombre]").value.trim();
+    if (!fecha || !nombre) {
+        mostrarEstadoFeriados("Complete la fecha y el nombre del feriado.", "error");
+        return;
+    }
+    const boton = formularioFeriado.querySelector("[data-accion='guardar-feriado']");
+    boton.disabled = true;
+    try {
+        const respuesta = await fetch(modalCatalogoFeriados.dataset.guardarUrl, {
+            method: "POST",
+            headers: {"Content-Type": "application/json", "X-CSRFToken": document.querySelector("[name='csrfmiddlewaretoken']")?.value || ""},
+            body: JSON.stringify({
+                feriado_id: Number(formularioFeriado.querySelector("[data-feriado-id]").value) || null,
+                fecha,
+                nombre,
+                activo: formularioFeriado.querySelector("[data-feriado-activo]").checked,
+            }),
+        });
+        const resultado = await respuesta.json();
+        if (!respuesta.ok || !resultado.ok) throw new Error(resultado.mensaje || "No fue posible guardar el feriado.");
+        const existente = modalCatalogoFeriados.querySelector(`[data-feriado-fila][data-id='${resultado.feriado.id}']`);
+        const nuevaFila = crearFilaFeriado(resultado.feriado);
+        existente ? existente.replaceWith(nuevaFila) : modalCatalogoFeriados.querySelector("[data-feriados-cuerpo]").append(nuevaFila);
+        modalCatalogoFeriados.querySelector("[data-feriados-vacio]")?.remove();
+        formularioFeriado.reset();
+        formularioFeriado.querySelector("[data-feriado-id]").value = "";
+        actualizarTotalFeriados();
+        mostrarEstadoFeriados(resultado.mensaje, "exito");
+    } catch (error) {
+        mostrarEstadoFeriados(error.message, "error");
+    } finally {
+        boton.disabled = false;
+    }
+};
+
+const eliminarFeriado = async (fila) => {
+    if (!window.confirm(`¿Eliminar el feriado “${fila.dataset.nombre}”?`)) return;
+    try {
+        const respuesta = await fetch(modalCatalogoFeriados.dataset.eliminarUrl, {
+            method: "POST",
+            headers: {"Content-Type": "application/json", "X-CSRFToken": document.querySelector("[name='csrfmiddlewaretoken']")?.value || ""},
+            body: JSON.stringify({feriado_id: Number(fila.dataset.id)}),
+        });
+        const resultado = await respuesta.json();
+        if (!respuesta.ok || !resultado.ok) throw new Error(resultado.mensaje || "No fue posible eliminar el feriado.");
+        fila.remove();
+        actualizarTotalFeriados();
+        mostrarEstadoFeriados(resultado.mensaje, "exito");
+    } catch (error) {
+        mostrarEstadoFeriados(error.message, "error");
+    }
+};
+
+const nombresTiposMaestro = {
+    cierre_inactividad: {codigo: "6", nombre: "INACTIVIDAD"},
+    reactivacion: {codigo: "9", nombre: "REACTIVACIONES"},
+    operativos: {codigo: "8", nombre: "OPERATIVOS"},
+    certificaciones: {codigo: "C", nombre: "CERTIFICACIONES"},
+};
+
+const obtenerPeriodoMaestro = () => {
+    const modo = modalMaestro.querySelector("[data-maestro-modo]").value;
+    const anio = modalMaestro.querySelector("[data-maestro-anio]").value;
+    const mes = modalMaestro.querySelector("[data-maestro-mes]").value;
+    const desde = modalMaestro.querySelector("[data-maestro-desde]").value;
+    const hasta = modalMaestro.querySelector("[data-maestro-hasta]").value;
+    if (modo !== "rango" && (!anio || Number(anio) < 2000 || Number(anio) > 2100)) {
+        return {error: "Introduzca un año válido entre 2000 y 2100."};
+    }
+    if (modo === "rango") {
+        if (!desde || !hasta) return {error: "Seleccione la fecha inicial y final del rango."};
+        if (desde > hasta) return {error: "La fecha inicial no puede ser posterior a la fecha final."};
+        return {modo, desde, hasta, texto: `${formatearFechaPreliminar(desde)} al ${formatearFechaPreliminar(hasta)}`};
+    }
+    if (modo === "mes") return {modo, anio, mes, texto: `${modalMaestro.querySelector("[data-maestro-mes]").selectedOptions[0].textContent} ${anio}`};
+    return {modo, anio, texto: `Año completo ${anio}`};
+};
+
+const coincidePeriodoMaestro = (fecha, periodo) => {
+    if (!fecha) return false;
+    if (periodo.modo === "rango") return fecha >= periodo.desde && fecha <= periodo.hasta;
+    const [anio, mes] = fecha.split("-");
+    return anio === periodo.anio && (periodo.modo !== "mes" || mes === periodo.mes);
+};
+
+const actualizarCamposMaestro = () => {
+    const modo = modalMaestro.querySelector("[data-maestro-modo]").value;
+    modalMaestro.querySelector("[data-maestro-campo='mes']").hidden = modo !== "mes";
+    modalMaestro.querySelector("[data-maestro-campo='anio']").hidden = modo === "rango";
+    modalMaestro.querySelector("[data-maestro-campo='desde']").hidden = modo !== "rango";
+    modalMaestro.querySelector("[data-maestro-campo='hasta']").hidden = modo !== "rango";
+};
+
+const filtrarMaestro = () => {
+    actualizarCamposMaestro();
+    const periodo = obtenerPeriodoMaestro();
+    const estado = modalMaestro.querySelector("[data-maestro-estado]");
+    if (periodo.error) {
+        estado.textContent = periodo.error;
+        estado.className = "maestro-estado maestro-estado--error";
+        return;
+    }
+    let visibles = 0;
+    modalMaestro.querySelectorAll("[data-maestro-fila]").forEach((fila) => {
+        const coincide = coincidePeriodoMaestro(fila.dataset.fecha, periodo);
+        fila.hidden = !coincide;
+        if (coincide) visibles += 1;
+    });
+    modalMaestro.querySelector("[data-maestro-periodo-texto]").textContent = `${periodo.texto} · ${visibles} registros`;
+    estado.textContent = visibles ? "Seleccione el tipo de reporte que desea generar." : "No hay registros en el período seleccionado.";
+    estado.className = "maestro-estado";
+};
+
+const inicializarMaestro = () => {
+    const ahora = new Date();
+    const anio = modalMaestro.querySelector("[data-maestro-anio]");
+    const mes = modalMaestro.querySelector("[data-maestro-mes]");
+    if (!anio.value) anio.value = String(ahora.getFullYear());
+    mes.value = String(ahora.getMonth() + 1).padStart(2, "0");
+    filtrarMaestro();
+};
+
+const generarReporteMaestro = (tipo) => {
+    const periodo = obtenerPeriodoMaestro();
+    const estado = modalMaestro.querySelector("[data-maestro-estado]");
+    if (periodo.error) {
+        estado.textContent = periodo.error;
+        estado.className = "maestro-estado maestro-estado--error";
+        return;
+    }
+    const filas = [...modalMaestro.querySelectorAll(`[data-maestro-fila][data-tipo='${tipo}']`)]
+        .filter((fila) => coincidePeriodoMaestro(fila.dataset.fecha, periodo));
+    if (!filas.length) {
+        estado.textContent = `No hay registros de ${nombresTiposMaestro[tipo].nombre.toLowerCase()} en ${periodo.texto}.`;
+        estado.className = "maestro-estado maestro-estado--error";
+        return;
+    }
+
+    const configuracion = nombresTiposMaestro[tipo];
+    const cuerpo = modalReporteMaestro.querySelector("[data-reporte-maestro-cuerpo]");
+    cuerpo.replaceChildren();
+    filas.forEach((fila) => {
+        const celdas = fila.cells;
+        const establecimiento = celdas[3]?.textContent.trim() || "";
+        const razon = celdas[4]?.textContent.trim() || "";
+        const empleador = razon && normalizarTextoPreliminar(razon) !== normalizarTextoPreliminar(establecimiento) ? `${establecimiento} / ${razon}` : establecimiento || razon;
+        const valores = ["", configuracion.nombre, celdas[1]?.textContent.trim(), celdas[2]?.textContent.trim(), empleador, celdas[5]?.textContent.trim(), celdas[6]?.textContent.trim()];
+        const filaReporte = document.createElement("tr");
+        valores.forEach((valor) => { const celda = document.createElement("td"); celda.textContent = valor || ""; filaReporte.append(celda); });
+        cuerpo.append(filaReporte);
+    });
+    const hoy = new Date();
+    const fechaHoy = [String(hoy.getDate()).padStart(2, "0"), String(hoy.getMonth() + 1).padStart(2, "0"), hoy.getFullYear()].join("/");
+    modalReporteMaestro.querySelector("[data-reporte-maestro-titulo]").textContent = `Listado de ${configuracion.nombre.toLowerCase()}`;
+    modalReporteMaestro.querySelector("[data-reporte-maestro-subtitulo]").textContent = `LISTADO DE ${configuracion.nombre} – ${periodo.texto.toUpperCase()}`;
+    modalReporteMaestro.querySelector("[data-reporte-maestro-fecha]").textContent = fechaHoy;
+    modalReporteMaestro.querySelector("[data-reporte-maestro-tipo]").textContent = configuracion.nombre;
+    modalReporteMaestro.querySelector("[data-reporte-maestro-periodo]").textContent = periodo.texto;
+    modalReporteMaestro.querySelector("[data-reporte-maestro-total]").textContent = String(filas.length);
+    cerrarReporte();
+    abrirModalReporte(modalReporteMaestro);
+    window.print();
+};
+
+const mostrarEstadoInforme = (mensaje, tipo = "") => {
+    const elemento = modalInformeInscripcion?.querySelector("[data-informe-estado]");
+    if (!elemento) return;
+    elemento.textContent = mensaje;
+    elemento.className = `informe-inscripcion-estado${tipo ? ` informe-inscripcion-estado--${tipo}` : ""}`;
+};
+
+const seleccionarInformeInscripcion = (item) => {
+    informeInscripcionSeleccionado = item;
+    modalInformeInscripcion.querySelectorAll("[data-informe-item]").forEach((boton) => boton.classList.toggle("activo", boton === item));
+    const base = {
+        ruc: item.dataset.ruc, sipe: item.dataset.sipe, razon: item.dataset.razon,
+        establecimiento: item.dataset.establecimiento, direccion: item.dataset.direccion,
+        representante: item.dataset.representante, cedulaRepresentante: item.dataset.cedulaRepresentante,
+    };
+    Object.entries(base).forEach(([nombre, valor]) => {
+        const campo = modalInformeInscripcion.querySelector(`[data-informe-base='${nombre}']`);
+        if (campo) campo.value = valor || "";
+    });
+    const guardados = datosInformesInscripcion[item.dataset.id] || {};
+    modalInformeInscripcion.querySelectorAll("[data-informe-campo]").forEach((campo) => {
+        const valor = guardados[campo.dataset.informeCampo];
+        if (campo.type === "checkbox") campo.checked = Boolean(valor);
+        else campo.value = valor ?? "";
+    });
+    if (!guardados.fechaInscripcion) modalInformeInscripcion.querySelector("[data-informe-campo='fechaInscripcion']").value = item.dataset.fecha || "";
+    const calculo = datosCalculosInscripcion[item.dataset.id] || {};
+    modalInformeInscripcion.querySelector("[data-informe-total-dias]").textContent = calculo.total_dias || 0;
+    modalInformeInscripcion.querySelector("[data-informe-dias-habiles]").textContent = calculo.dias_habiles || 0;
+    modalInformeInscripcion.querySelector("[data-informe-dias-libres]").textContent = calculo.dias_libres || 0;
+    mostrarEstadoInforme(guardados.fechaInforme ? "Informe guardado cargado." : "Complete los datos del informe.");
+};
+
+const datosActualesInformeInscripcion = () => {
+    const datos = {};
+    modalInformeInscripcion.querySelectorAll("[data-informe-campo]").forEach((campo) => {
+        datos[campo.dataset.informeCampo] = campo.type === "checkbox" ? campo.checked : campo.value.trim();
+    });
+    return datos;
+};
+
+const guardarInformeInscripcion = async () => {
+    if (!informeInscripcionSeleccionado) {
+        mostrarEstadoInforme("Seleccione un registro de inscripción.", "error"); return;
+    }
+    const boton = modalInformeInscripcion.querySelector("[data-accion='guardar-informe-inscripcion']");
+    boton.disabled = true; mostrarEstadoInforme("Guardando informe...");
+    try {
+        const datos = datosActualesInformeInscripcion();
+        const respuesta = await fetch(modalInformeInscripcion.dataset.guardarUrl, {
+            method: "POST", headers: {"Content-Type": "application/json", "X-CSRFToken": document.querySelector("[name='csrfmiddlewaretoken']")?.value || ""},
+            body: JSON.stringify({inscripcion_id: Number(informeInscripcionSeleccionado.dataset.id), datos}),
+        });
+        const resultado = await respuesta.json();
+        if (!respuesta.ok || !resultado.ok) throw new Error(resultado.mensaje || "No fue posible guardar el informe.");
+        datosInformesInscripcion[informeInscripcionSeleccionado.dataset.id] = resultado.datos;
+        mostrarEstadoInforme(resultado.mensaje, "exito");
+    } catch (error) { mostrarEstadoInforme(error.message, "error"); }
+    finally { boton.disabled = false; }
+};
+
+const abrirCalculoDesdeInforme = () => {
+    if (!informeInscripcionSeleccionado) { mostrarEstadoInforme("Seleccione un registro de inscripción.", "error"); return; }
+    const selector = modalCalculoDias.querySelector("[data-calculo-dias-expediente]");
+    selector.value = informeInscripcionSeleccionado.dataset.id;
+    modalCalculoDias.querySelector("[data-calculo-dias-inicial]").value = informeInscripcionSeleccionado.dataset.fecha || "";
+    modalCalculoDias.querySelector("[data-calculo-dias-final]").value = informeInscripcionSeleccionado.dataset.calendario || "";
+    resultadoCalculoDias = null; botonGuardarCalculoDias.disabled = true; botonVistaCalculoDias.disabled = true;
+    cerrarReporte(); abrirModalReporte(modalCalculoDias);
+};
+
+const filtrarInformesInscripcion = () => {
+    const termino = normalizarTextoPreliminar(modalInformeInscripcion.querySelector("[data-informe-busqueda]").value);
+    modalInformeInscripcion.querySelectorAll("[data-informe-item]").forEach((item) => {
+        item.hidden = Boolean(termino) && !normalizarTextoPreliminar(item.textContent).includes(termino);
+    });
+};
+
+const abrirInformeInscripcion = () => {
+    abrirModalReporte(modalInformeInscripcion);
+    if (!informeInscripcionSeleccionado) {
+        const primero = modalInformeInscripcion.querySelector("[data-informe-item]");
+        if (primero) seleccionarInformeInscripcion(primero);
+    }
 };
 
 const cerrarReporte = () => {
@@ -885,6 +1913,32 @@ botonAbrirReporte?.addEventListener("click", () => {
 botonAbrirActa?.addEventListener("click", () => {
     abrirModalReporte(modalActa, completarReporteActa);
 });
+botonAbrirPlanilla?.addEventListener("click", () => {
+    abrirModalReporte(modalPlanilla, completarModuloPlanilla);
+});
+botonAbrirPreliminar?.addEventListener("click", () => {
+    abrirModalReporte(modalPreliminar, completarPreliminar);
+});
+botonAbrirMovimientos?.addEventListener("click", () => {
+    abrirModalReporte(modalMovimientos, filtrarMovimientos);
+    busquedaMovimientos?.focus();
+});
+botonAbrirCalculoDias?.addEventListener("click", () => abrirModalReporte(modalCalculoDias));
+botonAbrirMaestro?.addEventListener("click", () => abrirModalReporte(modalMaestro, inicializarMaestro));
+botonAbrirInformeInscripcion?.addEventListener("click", abrirInformeInscripcion);
+document.querySelector("[data-accion='abrir-catalogo-feriados']")?.addEventListener("click", () => {
+    cerrarReporte();
+    abrirModalReporte(modalCatalogoFeriados);
+});
+document.querySelector("[data-accion='volver-calculo-desde-feriados']")?.addEventListener("click", () => {
+    cerrarReporte();
+    resultadoCalculoDias = null;
+    botonGuardarCalculoDias.disabled = true;
+    botonVistaCalculoDias.disabled = true;
+    modalCalculoDias.querySelector("[data-calculo-dias-resumen]").hidden = true;
+    estadoCalculoDias("El calendario cambió; vuelva a calcular el rango.");
+    abrirModalReporte(modalCalculoDias);
+});
 botonAbrirOperativos?.addEventListener("click", () => {
     inicializarAniosOperativos();
     abrirModalReporte(modalOperativos, filtrarOperativos);
@@ -895,9 +1949,10 @@ botonGenerarPdfOperativos?.addEventListener("click", () => {
     cerrarReporte();
     abrirModalReporte(modalReporteOperativos, completarReporteOperativos);
 });
-botonAbrirAvances?.addEventListener("click", () => {
+document.querySelectorAll("[data-accion='abrir-reporte-avances']").forEach((boton) => boton.addEventListener("click", () => {
+    cerrarReporte();
     abrirModalReporte(modalAvances, completarReporteAvances);
-});
+}));
 botonAbrirCitacion?.addEventListener("click", () => {
     abrirModalReporte(modalModuloCitacion, completarModuloCitacion);
 });
@@ -931,15 +1986,76 @@ radiosNuevaDireccion.forEach((radio) => {
     radio.addEventListener("change", actualizarVisibilidadDireccionActual);
 });
 botonGuardarReactivacion?.addEventListener("click", guardarReactivacion);
+botonGuardarPlanilla?.addEventListener("click", guardarPlanilla);
 botonGuardarInactividad?.addEventListener("click", guardarInactividad);
 document.querySelectorAll("[data-inactividad-item]").forEach((item) => item.addEventListener("click", () => seleccionarInactividad(item)));
 document.querySelectorAll("[data-inactividad-tab]").forEach((tab) => tab.addEventListener("click", () => activarTabInactividad(tab.dataset.inactividadTab)));
+document.querySelectorAll("[data-planilla-item]").forEach((item) => item.addEventListener("click", () => seleccionarPlanilla(item)));
 busquedaOperativos?.addEventListener("input", filtrarOperativos);
 filtroMesOperativos?.addEventListener("change", filtrarOperativos);
 filtroAnioOperativos?.addEventListener("change", filtrarOperativos);
 botonNuevoOperativo?.addEventListener("click", () => alternarFormularioOperativo(true));
 botonCancelarOperativo?.addEventListener("click", () => alternarFormularioOperativo(false));
 formularioOperativo?.addEventListener("submit", guardarOperativo);
+busquedaMovimientos?.addEventListener("input", filtrarMovimientos);
+botonGuardarMovimientos?.addEventListener("click", guardarMovimientos);
+formularioCalculoDias?.addEventListener("submit", solicitarCalculoDias);
+botonGuardarCalculoDias?.addEventListener("click", guardarCalculoDias);
+botonVistaCalculoDias?.addEventListener("click", abrirReporteCalculoDias);
+formularioFeriado?.addEventListener("submit", guardarFeriado);
+formularioFeriado?.addEventListener("reset", () => {
+    window.setTimeout(() => {
+        formularioFeriado.querySelector("[data-feriado-id]").value = "";
+        mostrarEstadoFeriados("");
+    }, 0);
+});
+modalCatalogoFeriados?.querySelector("[data-feriados-cuerpo]")?.addEventListener("click", (evento) => {
+    const boton = evento.target.closest("button[data-accion]");
+    const fila = boton?.closest("[data-feriado-fila]");
+    if (!boton || !fila) return;
+    if (boton.dataset.accion === "editar-feriado") editarFeriado(fila);
+    if (boton.dataset.accion === "eliminar-feriado") eliminarFeriado(fila);
+});
+modalMaestro?.querySelector("[data-maestro-filtros]")?.addEventListener("change", filtrarMaestro);
+modalMaestro?.querySelector("[data-maestro-filtros]")?.addEventListener("input", filtrarMaestro);
+modalMaestro?.querySelectorAll("[data-generar-maestro]").forEach((boton) => {
+    boton.addEventListener("click", () => generarReporteMaestro(boton.dataset.generarMaestro));
+});
+modalInformeInscripcion?.querySelectorAll("[data-informe-item]").forEach((item) => item.addEventListener("click", () => seleccionarInformeInscripcion(item)));
+modalInformeInscripcion?.querySelector("[data-informe-busqueda]")?.addEventListener("input", filtrarInformesInscripcion);
+modalInformeInscripcion?.querySelector("[data-accion='guardar-informe-inscripcion']")?.addEventListener("click", guardarInformeInscripcion);
+modalInformeInscripcion?.querySelector("[data-accion='calculo-desde-informe']")?.addEventListener("click", abrirCalculoDesdeInforme);
+formularioCalculoDias?.querySelectorAll("input, select").forEach((campo) => {
+    campo.addEventListener("change", () => {
+        resultadoCalculoDias = null;
+        botonGuardarCalculoDias.disabled = true;
+        botonVistaCalculoDias.disabled = true;
+        modalCalculoDias.querySelector("[data-calculo-dias-resumen]").hidden = true;
+        estadoCalculoDias("Las fechas o el expediente cambiaron; vuelva a calcular.");
+    });
+});
+modalMovimientos?.querySelectorAll("[data-movimiento-avance]").forEach((campo) => {
+    campo.addEventListener("input", () => {
+        campo.classList.add("movimiento-avance--modificado");
+        mostrarEstadoMovimientos("Hay comentarios pendientes de guardar.");
+    });
+});
+modalMovimientos?.querySelectorAll("[data-accion='imprimir-movimiento']").forEach((boton) => {
+    boton.addEventListener("click", () => generarReporteMovimiento(boton.closest("[data-movimiento-fila]")));
+});
+document.querySelectorAll("[data-preliminar-tipo]").forEach((boton) => {
+    boton.addEventListener("click", () => {
+        const tipo = boton.dataset.preliminarTipo || "inicial";
+        seleccionarTipoPreliminar(tipo);
+        generarReportePreliminar(tipo);
+    });
+});
+modalPreliminar?.querySelector("[data-preliminar-filtros]")?.addEventListener("input", filtrarPreliminar);
+modalPreliminar?.querySelector("[data-preliminar-filtros]")?.addEventListener("change", filtrarPreliminar);
+modalPreliminar?.querySelector("[data-preliminar-filtros]")?.addEventListener("submit", (evento) => evento.preventDefault());
+modalPreliminar?.querySelector("[data-preliminar-filtros]")?.addEventListener("reset", () => {
+    window.setTimeout(filtrarPreliminar, 0);
+});
 
 modalReporte?.addEventListener("click", (evento) => {
     if (evento.target === modalReporte) {
@@ -951,10 +2067,53 @@ modalActa?.addEventListener("click", (evento) => {
         cerrarReporte();
     }
 });
+modalPlanilla?.addEventListener("click", (evento) => {
+    if (evento.target === modalPlanilla) {
+        cerrarReporte();
+    }
+});
 modalOperativos?.addEventListener("click", (evento) => {
     if (evento.target === modalOperativos) {
         cerrarReporte();
     }
+});
+modalPreliminar?.addEventListener("click", (evento) => {
+    if (evento.target === modalPreliminar) {
+        cerrarReporte();
+    }
+});
+modalReportePreliminar?.addEventListener("click", (evento) => {
+    if (evento.target === modalReportePreliminar) {
+        cerrarReporte();
+    }
+});
+modalMovimientos?.addEventListener("click", (evento) => {
+    if (evento.target === modalMovimientos) {
+        cerrarReporte();
+    }
+});
+modalReporteMovimiento?.addEventListener("click", (evento) => {
+    if (evento.target === modalReporteMovimiento) {
+        cerrarReporte();
+    }
+});
+modalCalculoDias?.addEventListener("click", (evento) => {
+    if (evento.target === modalCalculoDias) cerrarReporte();
+});
+modalReporteCalculoDias?.addEventListener("click", (evento) => {
+    if (evento.target === modalReporteCalculoDias) cerrarReporte();
+});
+modalCatalogoFeriados?.addEventListener("click", (evento) => {
+    if (evento.target === modalCatalogoFeriados) cerrarReporte();
+});
+modalMaestro?.addEventListener("click", (evento) => {
+    if (evento.target === modalMaestro) cerrarReporte();
+});
+modalReporteMaestro?.addEventListener("click", (evento) => {
+    if (evento.target === modalReporteMaestro) cerrarReporte();
+});
+modalInformeInscripcion?.addEventListener("click", (evento) => {
+    if (evento.target === modalInformeInscripcion) cerrarReporte();
 });
 modalInactividad?.addEventListener("click", (evento) => {
     if (evento.target === modalInactividad) cerrarReporte();

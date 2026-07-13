@@ -5,7 +5,12 @@ from django.urls import reverse
 
 from .models import Inscripcion
 from .models import Inactividad
+from .models import InformeInscripcion
+from .models import CalculoDiasExpediente
+from .models import Feriado
+from .models import MovimientoAvance
 from .models import Operativo
+from .models import PlanillaOperativo
 from .models import Reactivacion
 
 
@@ -24,7 +29,7 @@ class PruebasPanelGestion(TestCase):
         self.assertEqual(respuesta.status_code, 200)
         self.assertContains(respuesta, "investigacion")
         self.assertContains(respuesta, "Inscripción")
-        self.assertContains(respuesta, "Lista de Inscripciones")
+        self.assertContains(respuesta, "Lista de Registros")
         self.assertContains(respuesta, "Información General")
         self.assertContains(respuesta, "Tipo de Gestión")
         self.assertContains(respuesta, "Estado de Gestión")
@@ -52,7 +57,7 @@ class PruebasPanelGestion(TestCase):
 
         self.assertEqual(respuesta.status_code, 200)
         self.assertContains(respuesta, "Inscripción")
-        self.assertContains(respuesta, "Lista de Inscripciones")
+        self.assertContains(respuesta, "Lista de Registros")
         self.assertContains(respuesta, "Información General")
         self.assertContains(respuesta, "Información de Contacto y Representante")
         self.assertContains(respuesta, "Acciones del módulo")
@@ -100,6 +105,12 @@ class PruebasPanelGestion(TestCase):
         self.assertContains(respuesta, "Módulo de boletas de citación")
         self.assertContains(respuesta, 'data-accion="generar-reporte-citacion"')
         self.assertContains(respuesta, "BOLETA DE CITACIÓN")
+        self.assertContains(respuesta, 'data-accion="abrir-planilla"')
+        self.assertContains(respuesta, 'data-modulo-planilla')
+        self.assertContains(respuesta, 'data-accion="guardar-planilla"')
+        self.assertContains(respuesta, "Cálculo de planilla originada de operativo")
+        self.assertContains(respuesta, "SALARIOS OMITIDOS")
+        self.assertContains(respuesta, "SUELDO SIPE")
         self.assertContains(respuesta, 'data-accion="abrir-modulo-reactivacion"')
         self.assertContains(respuesta, "Gestiones de reactivación")
         self.assertContains(respuesta, "Informe N°")
@@ -322,6 +333,38 @@ class PruebasPanelGestion(TestCase):
         self.assertContains(consulta, "Patrono de prueba")
         self.assertContains(consulta, "INF-900")
 
+    def test_guardar_planilla_operativo(self):
+        inscripcion = Inscripcion.objects.create(
+            tipo_gestion=Inscripcion.TIPO_GESTION_OPERATIVOS,
+            nombre_establecimiento="Hotel de prueba",
+            empleador_razon_social="Hotel de prueba S.A.",
+            cedula_ruc="8-800-100",
+            numero_sipe="43-800-100",
+        )
+        datos = {
+            "campos": {
+                "establecimiento": "Hotel de prueba",
+                "razon": "Hotel de prueba S.A.",
+                "sipe": "43-800-100",
+            },
+            "filas": [["4-123-456", "Empleado Uno", "01/01/2026", "", "", "", "1", "500.00", "//", "", "memo"]],
+            "notas": "Registro manual.",
+            "resumen": {"salariosOmitidos": "500.00", "seguroSocial": "115.00"},
+        }
+
+        respuesta = self.client.post(
+            reverse("gestion:guardar_planilla"),
+            data=json.dumps({"inscripcion_id": inscripcion.pk, "datos": datos}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertTrue(respuesta.json()["ok"])
+        self.assertEqual(PlanillaOperativo.objects.get(inscripcion=inscripcion).datos, datos)
+
+        consulta = self.client.get(reverse("gestion:detalle_modulo", kwargs={"slug": "inscripcion"}))
+        self.assertContains(consulta, "Registro manual.")
+
     def test_inactividad_lista_tipo_seis_y_guarda_formulario(self):
         cierre = Inscripcion.objects.create(
             tipo_gestion=Inscripcion.TIPO_GESTION_CIERRE,
@@ -419,3 +462,170 @@ class PruebasPanelGestion(TestCase):
 
         self.assertContains(respuesta, "Mostrando 6 a 7 de 7 registros")
         self.assertContains(respuesta, "Anterior")
+
+    def test_movimientos_muestra_y_guarda_comentario_de_avance(self):
+        inscripcion = Inscripcion.objects.create(
+            fecha_operacion="2026-07-11",
+            numero_sipe="43-612-10156",
+            nombre_establecimiento="Ventas de Plantas D",
+            empleador_razon_social="Seila Montes Guerra",
+            cedula_ruc="4-155-1",
+        )
+
+        pantalla = self.client.get(reverse("gestion:panel"))
+        self.assertContains(pantalla, "Movimientos y avances")
+        self.assertContains(pantalla, "Ventas de Plantas D")
+        self.assertContains(pantalla, "data-movimiento-avance")
+        self.assertContains(pantalla, "data-accion=\"imprimir-movimiento\"")
+        self.assertContains(pantalla, "DETALLE DE AVANCES DE INVESTIGACIONES A EMPLEADORES")
+
+        respuesta = self.client.post(
+            reverse("gestion:guardar_movimientos"),
+            data=json.dumps(
+                {
+                    "registros": [
+                        {
+                            "inscripcion_id": inscripcion.pk,
+                            "avance": "Patrono citado; pendiente de documentos.",
+                        }
+                    ]
+                }
+            ),
+            content_type="application/json",
+        )
+
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertTrue(respuesta.json()["ok"])
+        self.assertEqual(
+            MovimientoAvance.objects.get(inscripcion=inscripcion).avance,
+            "Patrono citado; pendiente de documentos.",
+        )
+
+    def test_calculo_dias_consulta_feriados_y_se_guarda_en_expediente(self):
+        inscripcion = Inscripcion.objects.create(
+            numero_sipe="43-100-200",
+            nombre_establecimiento="Empresa Calendario",
+            empleador_razon_social="Empresa Calendario S.A.",
+            cedula_ruc="8-100-200",
+        )
+        Feriado.objects.create(
+            fecha="2026-07-11",
+            nombre="Feriado configurado de prueba",
+        )
+        datos = {"fecha_inicial": "2026-07-10", "fecha_final": "2026-07-13"}
+
+        respuesta = self.client.post(
+            reverse("gestion:calcular_dias"),
+            data=json.dumps(datos),
+            content_type="application/json",
+        )
+        self.assertEqual(respuesta.status_code, 200)
+        resultado = respuesta.json()
+        self.assertEqual(resultado["total_dias"], 4)
+        self.assertEqual(resultado["dias_habiles"], 2)
+        self.assertEqual(resultado["fines_semana"], 1)
+        self.assertEqual(resultado["feriados"], 1)
+        self.assertEqual(resultado["detalle"][1]["motivo"], "Feriado configurado de prueba")
+
+        respuesta_guardar = self.client.post(
+            reverse("gestion:guardar_calculo_dias"),
+            data=json.dumps({**datos, "inscripcion_id": inscripcion.pk}),
+            content_type="application/json",
+        )
+        self.assertEqual(respuesta_guardar.status_code, 201)
+        calculo = CalculoDiasExpediente.objects.get(inscripcion=inscripcion)
+        self.assertEqual(calculo.total_dias, 4)
+        self.assertEqual(calculo.feriados, 1)
+
+    def test_catalogo_feriados_permite_crear_editar_y_eliminar(self):
+        crear = self.client.post(
+            reverse("gestion:guardar_feriado"),
+            data=json.dumps({"fecha": "2026-12-25", "nombre": "Navidad", "activo": True}),
+            content_type="application/json",
+        )
+        self.assertEqual(crear.status_code, 200)
+        feriado_id = crear.json()["feriado"]["id"]
+        self.assertTrue(Feriado.objects.get(pk=feriado_id).activo)
+
+        editar = self.client.post(
+            reverse("gestion:guardar_feriado"),
+            data=json.dumps(
+                {
+                    "feriado_id": feriado_id,
+                    "fecha": "2026-12-25",
+                    "nombre": "Navidad actualizada",
+                    "activo": False,
+                }
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(editar.status_code, 200)
+        feriado = Feriado.objects.get(pk=feriado_id)
+        self.assertEqual(feriado.nombre, "Navidad actualizada")
+        self.assertFalse(feriado.activo)
+
+        eliminar = self.client.post(
+            reverse("gestion:eliminar_feriado"),
+            data=json.dumps({"feriado_id": feriado_id}),
+            content_type="application/json",
+        )
+        self.assertEqual(eliminar.status_code, 200)
+        self.assertFalse(Feriado.objects.filter(pk=feriado_id).exists())
+
+    def test_maestro_incluye_botones_y_registros_de_los_cuatro_tipos(self):
+        for tipo, nombre in (
+            ("cierre_inactividad", "Empresa tipo 6"),
+            ("reactivacion", "Empresa tipo 9"),
+            ("operativos", "Empresa tipo 8"),
+            ("certificaciones", "Empresa tipo C"),
+        ):
+            Inscripcion.objects.create(
+                tipo_gestion=tipo,
+                fecha_operacion="2026-07-11",
+                numero_sipe=f"SIPE-{tipo}",
+                nombre_establecimiento=nombre,
+                empleador_razon_social=f"{nombre} S.A.",
+                cedula_ruc=f"RUC-{tipo}",
+            )
+
+        respuesta = self.client.get(reverse("gestion:panel"))
+        self.assertContains(respuesta, "data-modulo-maestro")
+        self.assertContains(respuesta, 'data-generar-maestro="cierre_inactividad"')
+        self.assertContains(respuesta, 'data-generar-maestro="reactivacion"')
+        self.assertContains(respuesta, 'data-generar-maestro="operativos"')
+        self.assertContains(respuesta, 'data-generar-maestro="certificaciones"')
+        self.assertContains(respuesta, "Empresa tipo 6")
+        self.assertContains(respuesta, "Empresa tipo C")
+
+    def test_informe_inscripcion_lista_tipo_uno_y_guarda_datos(self):
+        inscripcion = Inscripcion.objects.create(
+            tipo_gestion="inscripcion",
+            fecha_operacion="2026-07-12",
+            numero_sipe="43-INF-001",
+            nombre_establecimiento="Comercio Informe",
+            empleador_razon_social="Comercio Informe S.A.",
+            cedula_ruc="RUC-INF-001",
+        )
+        pantalla = self.client.get(reverse("gestion:panel"))
+        self.assertContains(pantalla, "data-modulo-informe-inscripcion")
+        self.assertContains(pantalla, "Comercio Informe")
+        self.assertContains(pantalla, "Cálculo de días")
+        self.assertContains(pantalla, "Planillas complementarias presentadas")
+        self.assertContains(pantalla, "Documentos pendientes")
+        self.assertContains(pantalla, "Nombre empresa relacionada")
+        self.assertContains(pantalla, "Representante legal")
+
+        datos = {
+            "fechaInforme": "2026-07-12",
+            "numeroInforme": "INF-001",
+            "empresaLocalizada": True,
+            "observaciones": "Registro verificado.",
+            "aceptarInscripcion": True,
+        }
+        respuesta = self.client.post(
+            reverse("gestion:guardar_informe_inscripcion"),
+            data=json.dumps({"inscripcion_id": inscripcion.pk, "datos": datos}),
+            content_type="application/json",
+        )
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertEqual(InformeInscripcion.objects.get(inscripcion=inscripcion).datos, datos)

@@ -163,6 +163,98 @@ class Inactividad(models.Model):
         return f"Inactividad de {self.inscripcion}"
 
 
+class PlanillaOperativo(models.Model):
+    inscripcion = models.OneToOneField(
+        Inscripcion,
+        on_delete=models.CASCADE,
+        related_name="planilla_operativo",
+    )
+    datos = models.JSONField(default=dict, blank=True)
+    creado_en = models.DateTimeField(auto_now_add=True)
+    actualizado_en = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "planilla de operativo"
+        verbose_name_plural = "planillas de operativos"
+
+    def __str__(self):
+        return f"Planilla de {self.inscripcion}"
+
+
+class MovimientoAvance(models.Model):
+    inscripcion = models.OneToOneField(
+        Inscripcion,
+        on_delete=models.CASCADE,
+        related_name="movimiento_avance",
+    )
+    avance = models.TextField(blank=True, default="")
+    creado_en = models.DateTimeField(auto_now_add=True)
+    actualizado_en = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "avance de movimiento"
+        verbose_name_plural = "avances de movimientos"
+
+    def __str__(self):
+        return f"Avance de {self.inscripcion}"
+
+
+class Feriado(models.Model):
+    fecha = models.DateField(unique=True)
+    nombre = models.CharField(max_length=180)
+    activo = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "feriado"
+        verbose_name_plural = "feriados"
+        ordering = ["fecha"]
+
+    def __str__(self):
+        return f"{self.fecha:%d/%m/%Y} - {self.nombre}"
+
+
+class CalculoDiasExpediente(models.Model):
+    inscripcion = models.ForeignKey(
+        Inscripcion,
+        on_delete=models.CASCADE,
+        related_name="calculos_dias",
+    )
+    fecha_inicial = models.DateField()
+    fecha_final = models.DateField()
+    total_dias = models.PositiveIntegerField()
+    dias_habiles = models.PositiveIntegerField()
+    fines_semana = models.PositiveIntegerField()
+    feriados = models.PositiveIntegerField()
+    detalle = models.JSONField(default=list)
+    creado_en = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "cálculo de días de expediente"
+        verbose_name_plural = "cálculos de días de expedientes"
+        ordering = ["-creado_en"]
+
+    def __str__(self):
+        return f"Cálculo {self.fecha_inicial:%d/%m/%Y} - {self.fecha_final:%d/%m/%Y}"
+
+
+class InformeInscripcion(models.Model):
+    inscripcion = models.OneToOneField(
+        Inscripcion,
+        on_delete=models.CASCADE,
+        related_name="informe_inscripcion",
+    )
+    datos = models.JSONField(default=dict, blank=True)
+    creado_en = models.DateTimeField(auto_now_add=True)
+    actualizado_en = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "informe de inscripción"
+        verbose_name_plural = "informes de inscripción"
+
+    def __str__(self):
+        return f"Informe de {self.inscripcion}"
+
+
 class Reactivacion(models.Model):
     inscripcion = models.OneToOneField(
         Inscripcion,

@@ -22,7 +22,7 @@
                 <div class="panel-listado__titulo">
                     <span class="indicador-seccion">2</span>
                     <div>
-                        <h2 id="titulo-inscripciones-creadas">Lista de Inscripciones</h2>
+                        <h2 id="titulo-inscripciones-creadas">Lista de Registros</h2>
                     </div>
                 </div>
             </header>
@@ -278,11 +278,11 @@
                         {% include "gestion/iconos.html" with icono="descarga" %}
                         <span>Citación</span>
                     </button>
-                    <button type="button" class="boton-accion-modulo">
+                    <button type="button" class="boton-accion-modulo" data-accion="abrir-planilla">
                         {% include "gestion/iconos.html" with icono="planilla" %}
                         <span>Planilla</span>
                     </button>
-                    <button type="button" class="boton-accion-modulo">
+                    <button type="button" class="boton-accion-modulo" data-accion="abrir-preliminar">
                         {% include "gestion/iconos.html" with icono="calendario" %}
                         <span>Preliminar</span>
                     </button>
@@ -290,11 +290,11 @@
                         {% include "gestion/iconos.html" with icono="grafico" %}
                         <span>Operativos</span>
                     </button>
-                    <button type="button" class="boton-accion-modulo">
+                    <button type="button" class="boton-accion-modulo" data-accion="abrir-movimientos">
                         {% include "gestion/iconos.html" with icono="movimientos" %}
                         <span>Movimientos</span>
                     </button>
-                    <button type="button" class="boton-accion-modulo">
+                    <button type="button" class="boton-accion-modulo" data-accion="abrir-maestro">
                         {% include "gestion/iconos.html" with icono="inicio" %}
                         <span>Maestro</span>
                     </button>
@@ -302,11 +302,11 @@
                         {% include "gestion/iconos.html" with icono="expediente" %}
                         <span>Expedientes</span>
                     </button>
-                    <button type="button" class="boton-accion-modulo">
+                    <button type="button" class="boton-accion-modulo" data-accion="abrir-calculo-dias">
                         {% include "gestion/iconos.html" with icono="info" %}
                         <span>Cálculo Días</span>
                     </button>
-                    <button type="button" class="boton-accion-modulo">
+                    <button type="button" class="boton-accion-modulo" data-accion="abrir-informe-inscripcion">
                         {% include "gestion/iconos.html" with icono="descarga" %}
                         <span>Inf. Inscripción</span>
                     </button>
@@ -321,6 +321,693 @@
                 </div>
             </section>
         </form>
+    </div>
+</div>
+
+<div class="modal-reporte" data-modulo-preliminar aria-hidden="true">
+    <div class="modal-reporte__panel modal-reporte__panel--preliminar" role="dialog" aria-modal="true" aria-labelledby="titulo-preliminar">
+        <header class="modal-reporte__barra">
+            <div>
+                <span>Consulta general</span>
+                <h2 id="titulo-preliminar">Control preliminar de gestiones</h2>
+            </div>
+            <div class="modal-reporte__acciones">
+                <button type="button" class="boton-modal boton-modal--primario" data-accion="imprimir-reporte">
+                    {% include "gestion/iconos.html" with icono="impresora" %}
+                    Imprimir / PDF
+                </button>
+                <button type="button" class="boton-modal" data-accion="cerrar-reporte">Volver</button>
+            </div>
+        </header>
+
+        <section class="pantalla-preliminar">
+            <div class="preliminar-resumen">
+                <div>
+                    <strong>Registros preliminares</strong>
+                    <span data-preliminar-reporte-descripcion>Investigaciones asignadas al comenzar la jornada u operativo.</span>
+                    <b class="preliminar-resumen__tipo" data-preliminar-reporte-tipo>Preliminar inicial</b>
+                </div>
+                <p><strong data-preliminar-total>{{ total_inscripciones }}</strong> registros encontrados</p>
+            </div>
+
+            <form class="preliminar-filtros" data-preliminar-filtros novalidate>
+                <label>
+                    <span>Fecha desde</span>
+                    <input type="date" data-preliminar-filtro="fecha-desde">
+                </label>
+                <label>
+                    <span>Fecha hasta</span>
+                    <input type="date" data-preliminar-filtro="fecha-hasta">
+                </label>
+                <label>
+                    <span>Tipo de investigación</span>
+                    <select data-preliminar-filtro="tipo">
+                        <option value="">Todos</option>
+                        {% for valor, etiqueta in tipos_gestion %}
+                            <option value="{{ valor }}">{{ etiqueta }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>
+                    <span>Estado</span>
+                    <select data-preliminar-filtro="estado">
+                        <option value="">Todos</option>
+                        <option value="pendiente">Pendiente</option>
+                        <option value="concluido">Concluido</option>
+                    </select>
+                </label>
+                <label>
+                    <span>Número de patrono</span>
+                    <input type="search" data-preliminar-filtro="numero" placeholder="SIPE o mainframe">
+                </label>
+                <label>
+                    <span>Nombre del patrono</span>
+                    <input type="search" data-preliminar-filtro="patrono" placeholder="Establecimiento o razón social">
+                </label>
+                <button type="reset" class="boton-modal">Limpiar filtros</button>
+                <p class="preliminar-filtros__estado" data-preliminar-filtros-estado aria-live="polite"></p>
+            </form>
+
+            <div class="preliminar-tabla-contenedor" tabindex="0" aria-label="Tabla preliminar con desplazamiento horizontal">
+                <table class="tabla-preliminar">
+                    <thead>
+                        <tr>
+                            <th>Fecha act.</th>
+                            <th>Fecha cit.</th>
+                            <th>Tipo de investigación</th>
+                            <th>Núm. patronal</th>
+                            <th>Núm. mainframe</th>
+                            <th>Patrono 1</th>
+                            <th>Patrono 2</th>
+                            <th>Lugar</th>
+                            <th class="tabla-preliminar__columna-final" data-preliminar-columna-final>Concluido</th>
+                            <th class="tabla-preliminar__columna-final" data-preliminar-columna-final>Causa pendiente</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for registro in registros_operativos %}
+                            <tr data-preliminar-fila
+                                data-fecha="{{ registro.fecha_operacion|date:'Y-m-d' }}"
+                                data-tipo="{{ registro.tipo_gestion }}"
+                                data-estado="{% if registro.estado_gestion == 'conclusion' %}concluido{% else %}pendiente{% endif %}"
+                                data-numero="{{ registro.numero_sipe }} {{ registro.numero_mainframe }}"
+                                data-patrono="{{ registro.nombre_establecimiento }} {{ registro.empleador_razon_social }}">
+                                <td>{% if registro.fecha_operacion %}{{ registro.fecha_operacion|date:"d/m/Y" }}{% else %}//{% endif %}</td>
+                                <td>{% if registro.fecha_calendario %}{{ registro.fecha_calendario|date:"d/m/Y" }}{% else %}//{% endif %}</td>
+                                <td>{{ registro.get_tipo_gestion_display }}</td>
+                                <td>{{ registro.numero_sipe|default:"S/N" }}</td>
+                                <td>{{ registro.numero_mainframe|default:"-" }}</td>
+                                <td title="{{ registro.nombre_establecimiento }}">{{ registro.nombre_establecimiento }}</td>
+                                <td title="{{ registro.empleador_razon_social }}">{{ registro.empleador_razon_social }}</td>
+                                <td title="{{ registro.direccion_establecimiento }}">{{ registro.direccion_establecimiento|default:"-" }}</td>
+                                <td class="tabla-preliminar__concluido tabla-preliminar__columna-final" data-preliminar-columna-final>
+                                    <input type="checkbox" tabindex="-1" aria-label="Gestión concluida" {% if registro.estado_gestion == "conclusion" %}checked{% endif %} disabled>
+                                </td>
+                                <td class="tabla-preliminar__columna-final" data-preliminar-columna-final>{% if registro.estado_gestion == "conclusion" %}—{% else %}{{ registro.get_estado_gestion_display }}{% endif %}</td>
+                            </tr>
+                        {% empty %}
+                            <tr class="tabla-preliminar__vacia">
+                                <td colspan="10">No hay registros disponibles para mostrar.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <p class="preliminar-sin-resultados" data-preliminar-sin-resultados hidden>No hay investigaciones que coincidan con los filtros.</p>
+
+            <footer class="preliminar-controles">
+                <label class="preliminar-fecha">
+                    <span>Fecha</span>
+                    <input type="date" data-preliminar-fecha>
+                </label>
+                <fieldset class="preliminar-tipo">
+                    <legend>Tipo de preliminar</legend>
+                    <div>
+                        <button type="button" class="preliminar-tipo__boton preliminar-tipo__boton--activo" data-preliminar-tipo="inicial" aria-pressed="true">
+                            {% include "gestion/iconos.html" with icono="impresora" %}
+                            Preliminar inicial
+                        </button>
+                        <button type="button" class="preliminar-tipo__boton" data-preliminar-tipo="final" aria-pressed="false">
+                            {% include "gestion/iconos.html" with icono="impresora" %}
+                            Preliminar final
+                        </button>
+                    </div>
+                </fieldset>
+                <div class="preliminar-firmas">
+                    <strong>Firmas autorizadas</strong>
+                    <label><span>Primera firma</span><input type="text" value="Rodrigo González" data-preliminar-firma="primera"></label>
+                    <label><span>Segunda firma</span><input type="text" value="Ileana Acosta" data-preliminar-firma="segunda"></label>
+                </div>
+                <button type="button" class="boton-modal preliminar-volver" data-accion="cerrar-reporte">Volver</button>
+            </footer>
+        </section>
+    </div>
+</div>
+
+<div class="modal-reporte" data-reporte-preliminar aria-hidden="true">
+    <div class="modal-reporte__panel modal-reporte__panel--documento-preliminar" role="dialog" aria-modal="true" aria-labelledby="titulo-reporte-preliminar">
+        <header class="modal-reporte__barra">
+            <div>
+                <span>Documento generado</span>
+                <h2 id="titulo-reporte-preliminar" data-documento-preliminar-titulo>Preliminar de investigaciones</h2>
+            </div>
+            <div class="modal-reporte__acciones">
+                <button type="button" class="boton-modal boton-modal--primario" data-accion="imprimir-reporte">
+                    {% include "gestion/iconos.html" with icono="impresora" %}
+                    Imprimir / Guardar PDF
+                </button>
+                <button type="button" class="boton-modal" data-accion="cerrar-reporte">Volver</button>
+            </div>
+        </header>
+        <div class="visor-reporte visor-reporte--preliminar">
+            <article class="hoja-reporte hoja-documento-preliminar" data-documento-preliminar>
+                <header class="documento-preliminar__encabezado">
+                    <div class="documento-preliminar__sello">{% include "gestion/iconos.html" with icono="institucion" %}</div>
+                    <div>
+                        <strong>CAJA DE SEGURO SOCIAL</strong>
+                        <span>DIRECCIÓN NACIONAL DE INGRESOS</span>
+                        <span>AGENCIA DE BOQUETE</span>
+                        <h3 data-documento-preliminar-subtitulo>CUADRO DE INVESTIGACIONES – PRELIMINAR INICIAL</h3>
+                    </div>
+                    <div></div>
+                </header>
+
+                <p class="documento-preliminar__fecha"><strong>FECHA:</strong> <span data-documento-preliminar-fecha></span></p>
+
+                <table class="tabla-documento-preliminar">
+                    <thead data-documento-preliminar-cabecera></thead>
+                    <tbody data-documento-preliminar-cuerpo></tbody>
+                </table>
+
+                <section class="documento-preliminar__tipos">
+                    <strong>TIPO DE INVESTIGACIONES:</strong>
+                    <div>
+                        {% for valor, etiqueta in tipos_gestion %}
+                            <span data-documento-tipo="{{ valor }}">{{ etiqueta }} (&nbsp;&nbsp;)</span>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <footer class="documento-preliminar__firmas">
+                    <div>
+                        <span data-documento-preliminar-firma="primera">Rodrigo González</span>
+                        <strong>Nombre y firma del jefe de sección</strong>
+                    </div>
+                    <div>
+                        <span data-documento-preliminar-firma="segunda">Ileana Acosta</span>
+                        <strong>Nombre, firma y número de investigador</strong>
+                    </div>
+                    <div>
+                        <span data-documento-preliminar-fecha-firma></span>
+                        <strong>Fecha</strong>
+                    </div>
+                </footer>
+            </article>
+        </div>
+    </div>
+</div>
+
+<div class="modal-reporte" data-modulo-movimientos data-guardar-url="{% url 'gestion:guardar_movimientos' %}" aria-hidden="true">
+    <div class="modal-reporte__panel modal-reporte__panel--movimientos" role="dialog" aria-modal="true" aria-labelledby="titulo-movimientos">
+        <header class="modal-reporte__barra">
+            <div>
+                <span>Consulta general</span>
+                <h2 id="titulo-movimientos">Movimientos y avances</h2>
+            </div>
+            <div class="modal-reporte__acciones">
+                <button type="button" class="boton-modal boton-modal--primario" data-accion="guardar-movimientos">
+                    {% include "gestion/iconos.html" with icono="guardar" %}
+                    Guardar avances
+                </button>
+                <button type="button" class="boton-modal" data-accion="cerrar-reporte">Volver</button>
+            </div>
+        </header>
+
+        <section class="pantalla-movimientos">
+            <div class="movimientos-herramientas">
+                <label>
+                    <span>Buscar registros</span>
+                    <input type="search" data-movimientos-busqueda placeholder="Número patronal, establecimiento, razón social o cédula">
+                </label>
+                <p><strong data-movimientos-total>{{ total_inscripciones }}</strong> registros encontrados</p>
+            </div>
+
+            <div class="movimientos-tabla-contenedor" tabindex="0" aria-label="Tabla de movimientos con desplazamiento horizontal">
+                <table class="tabla-movimientos">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Núm. patronal</th>
+                            <th>Patrono 1 / Establecimiento</th>
+                            <th>Patrono 2 / Razón social</th>
+                            <th>Avance</th>
+                            <th>Cédula / R.U.C.</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for registro in registros_movimientos %}
+                            <tr data-movimiento-fila data-inscripcion-id="{{ registro.pk }}">
+                                <td>{% if registro.fecha_operacion %}{{ registro.fecha_operacion|date:"d/m/Y" }}{% else %}//{% endif %}</td>
+                                <td>{{ registro.numero_sipe|default:"S/N" }}</td>
+                                <td title="{{ registro.nombre_establecimiento }}">{{ registro.nombre_establecimiento }}</td>
+                                <td title="{{ registro.empleador_razon_social }}">{{ registro.empleador_razon_social }}</td>
+                                <td class="tabla-movimientos__avance">
+                                    <textarea maxlength="1000" rows="2" data-movimiento-avance aria-label="Comentario de avance para {{ registro.nombre_establecimiento }}">{{ registro.movimiento_avance.avance|default:"" }}</textarea>
+                                </td>
+                                <td>{{ registro.cedula_ruc }}</td>
+                                <td class="tabla-movimientos__accion">
+                                    <button type="button" class="boton-imprimir-movimiento" data-accion="imprimir-movimiento" title="Imprimir avance de {{ registro.nombre_establecimiento }}">
+                                        {% include "gestion/iconos.html" with icono="impresora" %}
+                                        <span>Imprimir</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr class="tabla-movimientos__vacia">
+                                <td colspan="7">No hay registros disponibles.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <p class="movimientos-sin-resultados" data-movimientos-sin-resultados hidden>No hay registros que coincidan con la búsqueda.</p>
+            <p class="movimientos-estado" data-movimientos-estado aria-live="polite"></p>
+        </section>
+    </div>
+</div>
+
+<div class="modal-reporte" data-reporte-movimiento aria-hidden="true">
+    <div class="modal-reporte__panel modal-reporte__panel--reporte-movimiento" role="dialog" aria-modal="true" aria-labelledby="titulo-reporte-movimiento">
+        <header class="modal-reporte__barra">
+            <div>
+                <span>Documento generado</span>
+                <h2 id="titulo-reporte-movimiento">Detalle de avance de investigación</h2>
+            </div>
+            <div class="modal-reporte__acciones">
+                <button type="button" class="boton-modal boton-modal--primario" data-accion="imprimir-reporte">
+                    {% include "gestion/iconos.html" with icono="impresora" %}
+                    Imprimir / Guardar PDF
+                </button>
+                <button type="button" class="boton-modal" data-accion="cerrar-reporte">Volver</button>
+            </div>
+        </header>
+        <div class="visor-reporte visor-reporte--movimiento">
+            <article class="hoja-reporte hoja-reporte-movimiento">
+                <header class="reporte-movimiento__encabezado">
+                    <div class="reporte-movimiento__sello">{% include "gestion/iconos.html" with icono="institucion" %}</div>
+                    <div>
+                        <strong>CAJA DE SEGURO SOCIAL</strong>
+                        <span>DEPARTAMENTO DE INVESTIGACIÓN DE INGRESOS</span>
+                        <span>DIRECCIÓN NACIONAL DE INGRESOS</span>
+                        <h3>DETALLE DE AVANCES DE INVESTIGACIONES A EMPLEADORES</h3>
+                    </div>
+                    <b>ANEXO No. 6</b>
+                </header>
+
+                <section class="reporte-movimiento__empleador">
+                    <p><strong>Establecimiento</strong><span data-reporte-movimiento-establecimiento></span></p>
+                    <p><strong>Razón social</strong><span data-reporte-movimiento-razon></span></p>
+                    <p><strong>Empleador</strong><span data-reporte-movimiento-numero></span></p>
+                    <p><strong>Cédula / R.U.C.</strong><span data-reporte-movimiento-cedula></span></p>
+                </section>
+
+                <table class="tabla-reporte-movimiento">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Observaciones del investigador</th>
+                            <th>Investigador</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td data-reporte-movimiento-fecha></td>
+                            <td data-reporte-movimiento-avance></td>
+                            <td data-reporte-movimiento-investigador>Ileana Acosta</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+        </div>
+    </div>
+</div>
+
+<div class="modal-reporte" data-modulo-calculo-dias data-calcular-url="{% url 'gestion:calcular_dias' %}" data-guardar-url="{% url 'gestion:guardar_calculo_dias' %}" aria-hidden="true">
+    <div class="modal-reporte__panel modal-reporte__panel--calculo-dias" role="dialog" aria-modal="true" aria-labelledby="titulo-calculo-dias">
+        <header class="modal-reporte__barra">
+            <div><span>Herramienta de expediente</span><h2 id="titulo-calculo-dias">Cálculo de días</h2></div>
+            <div class="modal-reporte__acciones">
+                <button type="button" class="boton-modal" data-accion="abrir-catalogo-feriados">Catálogo de feriados</button>
+                <button type="button" class="boton-modal" data-accion="vista-imprimible-calculo" disabled>{% include "gestion/iconos.html" with icono="impresora" %} Vista imprimible</button>
+                <button type="button" class="boton-modal boton-modal--primario" data-accion="guardar-calculo-dias" disabled>{% include "gestion/iconos.html" with icono="guardar" %} Guardar en expediente</button>
+                <button type="button" class="boton-modal" data-accion="cerrar-reporte">Volver</button>
+            </div>
+        </header>
+        <section class="pantalla-calculo-dias">
+            <form class="calculo-dias-formulario" data-calculo-dias-formulario novalidate>
+                <label class="calculo-dias-expediente"><span>Expediente</span>
+                    <select data-calculo-dias-expediente required>
+                        <option value="">Seleccione un expediente</option>
+                        {% for expediente in expedientes_calculo %}
+                            <option value="{{ expediente.pk }}" data-establecimiento="{{ expediente.nombre_establecimiento }}" data-razon="{{ expediente.empleador_razon_social }}" data-numero="{{ expediente.numero_sipe }}">{{ expediente.numero_sipe|default:"S/N" }} · {{ expediente.nombre_establecimiento }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label><span>Fecha inicial</span><input type="date" data-calculo-dias-inicial required></label>
+                <label><span>Fecha final</span><input type="date" data-calculo-dias-final required></label>
+                <button type="submit" class="boton-modal boton-modal--primario" data-accion="calcular-dias">Calcular rango</button>
+                <p class="calculo-dias-calendario">Calendario consultado: <strong data-total-feriados-activos>{{ total_feriados_configurados }}</strong> feriados activos. Use “Catálogo de feriados” para administrar Navidad, Año Nuevo, Día de la Madre y otras fechas.</p>
+            </form>
+            <div class="calculo-dias-resumen" data-calculo-dias-resumen hidden>
+                <article><span>Total de días</span><strong data-calculo-total>0</strong></article>
+                <article><span>Días hábiles</span><strong data-calculo-habiles>0</strong></article>
+                <article><span>Fines de semana</span><strong data-calculo-fines-semana>0</strong></article>
+                <article><span>Feriados</span><strong data-calculo-feriados>0</strong></article>
+            </div>
+            <div class="calculo-dias-tabla-contenedor">
+                <table class="tabla-calculo-dias">
+                    <thead><tr><th>Fecha</th><th>Día</th><th>Condición</th><th>Motivo del feriado</th></tr></thead>
+                    <tbody data-calculo-dias-cuerpo><tr class="tabla-calculo-dias__vacia"><td colspan="4">Seleccione las fechas y presione “Calcular rango”.</td></tr></tbody>
+                </table>
+            </div>
+            <p class="calculo-dias-estado" data-calculo-dias-estado aria-live="polite"></p>
+        </section>
+    </div>
+</div>
+
+<div class="modal-reporte" data-catalogo-feriados data-guardar-url="{% url 'gestion:guardar_feriado' %}" data-eliminar-url="{% url 'gestion:eliminar_feriado' %}" aria-hidden="true">
+    <div class="modal-reporte__panel modal-reporte__panel--catalogo-feriados" role="dialog" aria-modal="true" aria-labelledby="titulo-catalogo-feriados">
+        <header class="modal-reporte__barra">
+            <div><span>Configuración del calendario</span><h2 id="titulo-catalogo-feriados">Catálogo de días festivos y feriados</h2></div>
+            <div class="modal-reporte__acciones"><button type="button" class="boton-modal" data-accion="volver-calculo-desde-feriados">Volver al cálculo</button></div>
+        </header>
+        <section class="pantalla-catalogo-feriados">
+            <form class="catalogo-feriados-formulario" data-formulario-feriado novalidate>
+                <input type="hidden" data-feriado-id>
+                <label><span>Fecha</span><input type="date" data-feriado-fecha required></label>
+                <label class="catalogo-feriados-nombre"><span>Nombre del feriado</span><input type="text" maxlength="180" data-feriado-nombre placeholder="Ej.: Navidad, Año Nuevo, Día de la Madre" required></label>
+                <label class="catalogo-feriados-activo"><input type="checkbox" data-feriado-activo checked> <span>Activo en los cálculos</span></label>
+                <button type="submit" class="boton-modal boton-modal--primario" data-accion="guardar-feriado">Guardar feriado</button>
+                <button type="reset" class="boton-modal" data-accion="cancelar-edicion-feriado">Nuevo / Limpiar</button>
+                <p>Registre una fecha exacta por cada año. Los feriados inactivos permanecen en el catálogo, pero no se contabilizan.</p>
+            </form>
+            <div class="catalogo-feriados-tabla-contenedor">
+                <table class="tabla-catalogo-feriados">
+                    <thead><tr><th>Fecha</th><th>Nombre</th><th>Estado</th><th>Administrar</th></tr></thead>
+                    <tbody data-feriados-cuerpo>
+                        {% for feriado in feriados_configurados %}
+                            <tr data-feriado-fila data-id="{{ feriado.pk }}" data-fecha="{{ feriado.fecha|date:'Y-m-d' }}" data-nombre="{{ feriado.nombre }}" data-activo="{{ feriado.activo|yesno:'true,false' }}">
+                                <td data-feriado-celda="fecha">{{ feriado.fecha|date:"d/m/Y" }}</td>
+                                <td data-feriado-celda="nombre">{{ feriado.nombre }}</td>
+                                <td data-feriado-celda="estado"><span class="estado-feriado {% if feriado.activo %}estado-feriado--activo{% endif %}">{% if feriado.activo %}Activo{% else %}Inactivo{% endif %}</span></td>
+                                <td class="tabla-catalogo-feriados__acciones"><button type="button" data-accion="editar-feriado">Editar</button><button type="button" data-accion="eliminar-feriado">Eliminar</button></td>
+                            </tr>
+                        {% empty %}
+                            <tr data-feriados-vacio><td colspan="4">No hay feriados configurados.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <p class="catalogo-feriados-estado" data-catalogo-feriados-estado aria-live="polite"></p>
+        </section>
+    </div>
+</div>
+
+<div class="modal-reporte" data-reporte-calculo-dias aria-hidden="true">
+    <div class="modal-reporte__panel modal-reporte__panel--reporte-calculo-dias" role="dialog" aria-modal="true" aria-labelledby="titulo-reporte-calculo-dias">
+        <header class="modal-reporte__barra">
+            <div><span>Vista imprimible</span><h2 id="titulo-reporte-calculo-dias">Cálculo de días del expediente</h2></div>
+            <div class="modal-reporte__acciones">
+                <button type="button" class="boton-modal boton-modal--primario" data-accion="imprimir-reporte">{% include "gestion/iconos.html" with icono="impresora" %} Imprimir / Guardar PDF</button>
+                <button type="button" class="boton-modal" data-accion="cerrar-reporte">Volver</button>
+            </div>
+        </header>
+        <div class="visor-reporte">
+            <article class="hoja-reporte hoja-reporte-calculo-dias">
+                <header class="reporte-calculo-dias__encabezado">
+                    <div>{% include "gestion/iconos.html" with icono="institucion" %}</div>
+                    <section><strong>CAJA DE SEGURO SOCIAL</strong><span>DIRECCIÓN NACIONAL DE INGRESOS</span><span>DEPARTAMENTO DE INVESTIGACIÓN DE INGRESOS</span><h3>CÁLCULO DE DÍAS DEL EXPEDIENTE</h3></section>
+                    <div></div>
+                </header>
+                <section class="reporte-calculo-dias__expediente">
+                    <p><strong>Expediente:</strong> <span data-reporte-calculo-expediente></span></p>
+                    <p><strong>N.º patronal:</strong> <span data-reporte-calculo-numero></span></p>
+                    <p><strong>Período:</strong> <span data-reporte-calculo-periodo></span></p>
+                </section>
+                <section class="reporte-calculo-dias__resumen">
+                    <p>Total: <strong data-reporte-calculo-total></strong></p><p>Hábiles: <strong data-reporte-calculo-habiles></strong></p><p>Fines de semana: <strong data-reporte-calculo-fines></strong></p><p>Feriados: <strong data-reporte-calculo-feriados></strong></p>
+                </section>
+                <table class="tabla-reporte-calculo-dias"><thead><tr><th>Fecha</th><th>Día</th><th>Condición</th><th>Motivo</th></tr></thead><tbody data-reporte-calculo-cuerpo></tbody></table>
+            </article>
+        </div>
+    </div>
+</div>
+
+<div class="modal-reporte" data-modulo-informe-inscripcion data-guardar-url="{% url 'gestion:guardar_informe_inscripcion' %}" aria-hidden="true">
+    <div class="modal-reporte__panel modal-reporte__panel--informe-inscripcion" role="dialog" aria-modal="true" aria-labelledby="titulo-informe-inscripcion">
+        <header class="modal-reporte__barra"><div><span>Registro tipo Inscripción</span><h2 id="titulo-informe-inscripcion">Informe de inscripción</h2></div><div class="modal-reporte__acciones"><button type="button" class="boton-modal" data-accion="calculo-desde-informe">Cálculo de días</button><button type="button" class="boton-modal boton-modal--primario" data-accion="guardar-informe-inscripcion">{% include "gestion/iconos.html" with icono="guardar" %} Guardar informe</button><button type="button" class="boton-modal" data-accion="cerrar-reporte">Volver</button></div></header>
+        <section class="pantalla-informe-inscripcion">
+            <aside class="informe-inscripcion-listado"><header><strong>Registros de inscripción</strong><span>{{ registros_informe_inscripcion|length }} disponibles</span></header><input type="search" data-informe-busqueda placeholder="Buscar establecimiento o patrono"><div>
+                {% for registro in registros_informe_inscripcion %}<button type="button" data-informe-item data-id="{{ registro.pk }}" data-fecha="{{ registro.fecha_operacion|date:'Y-m-d' }}" data-calendario="{{ registro.fecha_calendario|date:'Y-m-d' }}" data-sipe="{{ registro.numero_sipe }}" data-mainframe="{{ registro.numero_mainframe }}" data-establecimiento="{{ registro.nombre_establecimiento }}" data-razon="{{ registro.empleador_razon_social }}" data-ruc="{{ registro.cedula_ruc }}" data-direccion="{{ registro.direccion_establecimiento }}" data-representante="{{ registro.representante_legal }}" data-cedula-representante="{{ registro.cedula_representante }}"><strong>{{ registro.nombre_establecimiento }}</strong><span>{{ registro.numero_sipe|default:"S/N" }} · {{ registro.empleador_razon_social }}</span></button>{% empty %}<p>No hay registros tipo Inscripción.</p>{% endfor %}
+            </div></aside>
+            <form class="informe-inscripcion-formulario" data-informe-formulario novalidate>
+                <section class="informe-seccion"><h3>A. Generales de la empresa</h3><div class="informe-grid">
+                    <label><span>Fecha de informe</span><input type="date" data-informe-campo="fechaInforme"></label><label><span>Número</span><input type="text" data-informe-campo="numeroInforme"></label><label><span>Cédula / R.U.C.</span><input type="text" data-informe-base="ruc" readonly></label><label><span>No. de identificación</span><input type="text" data-informe-base="sipe" readonly></label>
+                    <label class="informe-ancho"><span>Empleador o razón social</span><input type="text" data-informe-base="razon" readonly></label><label class="informe-ancho"><span>Nombre comercial</span><input type="text" data-informe-base="establecimiento" readonly></label><label class="informe-completo"><span>Dirección</span><input type="text" data-informe-base="direccion" readonly></label><label class="informe-ancho"><span>Representante legal</span><input type="text" data-informe-base="representante" readonly></label><label class="informe-ancho"><span>Cédula del representante</span><input type="text" data-informe-base="cedulaRepresentante" readonly></label>
+                </div></section>
+                <section class="informe-seccion"><h3>B. Resultado de la investigación</h3><div class="informe-grid">
+                    <label><span>Fecha de inscripción</span><input type="date" data-informe-campo="fechaInscripcion"></label><label><span>Inicio de operaciones</span><input type="date" data-informe-campo="fechaInicioOperaciones"></label><label><span>Solicitud para sanciones</span><input type="date" data-informe-campo="fechaSolicitudSanciones"></label><label><span>Planilla inicial</span><input type="text" data-informe-campo="planillaInicial"></label><label><span>Monto planilla inicial</span><input type="number" min="0" step="0.01" data-informe-campo="montoPlanillaInicial"></label><label><span>Empleados no afiliados</span><input type="number" min="0" data-informe-campo="empleadosNoAfiliados"></label><label><span>Empleados reportados</span><input type="number" min="0" data-informe-campo="empleadosReportados"></label><label><span>Empleados no reportados</span><input type="number" min="0" data-informe-campo="empleadosNoReportados"></label><label><span>N.º de actas</span><input type="number" min="0" data-informe-campo="actasVisitas"></label><label><span>Períodos afectados</span><input type="text" data-informe-campo="periodosAfectados"></label>
+                </div><div class="informe-preguntas">
+                    <label><input type="checkbox" data-informe-campo="planillasComplementarias"> Planillas complementarias presentadas</label><label><input type="checkbox" data-informe-campo="empresaLocalizada"> La empresa fue localizada</label><label><input type="checkbox" data-informe-campo="direccionCorrecta"> La dirección anotada es correcta</label><label><input type="checkbox" data-informe-campo="reportanTrabajadores"> Reportan todos los trabajadores</label><label><input type="checkbox" data-informe-campo="relacionOtrasEmpresas"> Tiene relación con otras empresas</label><label><input type="checkbox" data-informe-campo="documentosPendientes"> Documentos pendientes</label><label><input type="checkbox" data-informe-campo="empresaOperando"> La empresa se encuentra operando</label><label><input type="checkbox" data-informe-campo="actividadCorrecta"> La actividad declarada es correcta</label>
+                </div><div class="informe-grid"><label><span>N.º empleador relacionado</span><input type="text" data-informe-campo="numeroEmpleadorRelacionado"></label><label class="informe-ancho"><span>Nombre empresa relacionada</span><input type="text" data-informe-campo="nombreEmpresaRelacionada"></label><label><span>Trabajadores que posee</span><input type="number" min="0" data-informe-campo="trabajadoresPosee"></label><label><span>Salarios</span><input type="number" min="0" step="0.01" data-informe-campo="salarios"></label></div></section>
+                <section class="informe-seccion"><h3>C. Observaciones</h3><textarea data-informe-campo="observaciones" rows="4"></textarea></section>
+                <section class="informe-seccion"><h3>D. Recomendaciones</h3><div class="informe-recomendacion"><label><input type="checkbox" data-informe-campo="aceptarInscripcion"> Puede ser aceptada la inscripción</label><label><span>Si la respuesta es no, explique los motivos</span><textarea data-informe-campo="motivoNoAceptada" rows="3"></textarea></label></div></section>
+                <footer class="informe-inscripcion-pie"><div><strong>Firmas autorizadas</strong><span>Agente administrativo: Rodrigo González</span><span>Subagente administrativo: Rodrigo González</span><span>Investigador(a): Ileana Acosta</span></div><div class="informe-totales"><p>Total de días <strong data-informe-total-dias>0</strong></p><p>Días hábiles <strong data-informe-dias-habiles>0</strong></p><p>Días libres <strong data-informe-dias-libres>0</strong></p></div></footer>
+                <p class="informe-inscripcion-estado" data-informe-estado aria-live="polite"></p>
+            </form>
+        </section>
+    </div>
+</div>
+{{ informes_inscripcion_datos|json_script:"informes-inscripcion-datos" }}
+{{ calculos_inscripcion_datos|json_script:"calculos-inscripcion-datos" }}
+
+<div class="modal-reporte" data-modulo-maestro aria-hidden="true">
+    <div class="modal-reporte__panel modal-reporte__panel--maestro" role="dialog" aria-modal="true" aria-labelledby="titulo-maestro">
+        <header class="modal-reporte__barra">
+            <div><span>Reportes consolidados</span><h2 id="titulo-maestro">Maestro de investigaciones</h2></div>
+            <div class="modal-reporte__acciones"><button type="button" class="boton-modal" data-accion="cerrar-reporte">Volver</button></div>
+        </header>
+        <section class="pantalla-maestro">
+            <form class="maestro-filtros" data-maestro-filtros novalidate>
+                <label><span>Período</span>
+                    <select data-maestro-modo>
+                        <option value="mes">Mes y año</option>
+                        <option value="anio">Todo el año</option>
+                        <option value="rango">Rango de fechas</option>
+                    </select>
+                </label>
+                <label data-maestro-campo="mes"><span>Mes</span>
+                    <select data-maestro-mes>
+                        <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option><option value="04">Abril</option>
+                        <option value="05">Mayo</option><option value="06">Junio</option><option value="07">Julio</option><option value="08">Agosto</option>
+                        <option value="09">Septiembre</option><option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+                    </select>
+                </label>
+                <label data-maestro-campo="anio"><span>Año</span><input type="number" min="2000" max="2100" data-maestro-anio></label>
+                <label data-maestro-campo="desde" hidden><span>Fecha desde</span><input type="date" data-maestro-desde></label>
+                <label data-maestro-campo="hasta" hidden><span>Fecha hasta</span><input type="date" data-maestro-hasta></label>
+                <p data-maestro-periodo-texto></p>
+            </form>
+
+            <div class="maestro-reportes">
+                <button type="button" data-generar-maestro="cierre_inactividad"><span>Inactividad</span><small>Generar reporte PDF</small></button>
+                <button type="button" data-generar-maestro="reactivacion"><span>Reactivación</span><small>Generar reporte PDF</small></button>
+                <button type="button" data-generar-maestro="operativos"><span>Operativos</span><small>Generar reporte PDF</small></button>
+                <button type="button" data-generar-maestro="certificaciones"><span>Certificaciones</span><small>Generar reporte PDF</small></button>
+            </div>
+
+            <div class="maestro-tabla-contenedor">
+                <table class="tabla-maestro">
+                    <thead><tr><th>Tipo</th><th>Fecha</th><th>N.º patronal</th><th>Patrono 1</th><th>Razón social</th><th>Dirección</th><th>Actividad</th></tr></thead>
+                    <tbody>
+                        {% for registro in registros_operativos %}
+                            {% if registro.tipo_gestion == "cierre_inactividad" or registro.tipo_gestion == "reactivacion" or registro.tipo_gestion == "operativos" or registro.tipo_gestion == "certificaciones" %}
+                                <tr data-maestro-fila data-tipo="{{ registro.tipo_gestion }}" data-fecha="{{ registro.fecha_operacion|date:'Y-m-d' }}">
+                                    <td>{% if registro.tipo_gestion == "cierre_inactividad" %}Inactividad{% elif registro.tipo_gestion == "reactivacion" %}Reactivación{% elif registro.tipo_gestion == "operativos" %}Operativos{% else %}Certificaciones{% endif %}</td>
+                                    <td>{% if registro.fecha_operacion %}{{ registro.fecha_operacion|date:"d/m/Y" }}{% else %}//{% endif %}</td>
+                                    <td>{{ registro.numero_sipe|default:"S/N" }}</td>
+                                    <td>{{ registro.nombre_establecimiento }}</td>
+                                    <td>{{ registro.empleador_razon_social }}</td>
+                                    <td>{{ registro.direccion_establecimiento|default:"—" }}</td>
+                                    <td>{{ registro.get_tipo_actividad_display|upper }}</td>
+                                </tr>
+                            {% endif %}
+                        {% empty %}
+                            <tr data-maestro-vacio><td colspan="7">No hay registros para los tipos configurados.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <p class="maestro-estado" data-maestro-estado aria-live="polite"></p>
+        </section>
+    </div>
+</div>
+
+<div class="modal-reporte" data-reporte-maestro aria-hidden="true">
+    <div class="modal-reporte__panel modal-reporte__panel--reporte-maestro" role="dialog" aria-modal="true" aria-labelledby="titulo-reporte-maestro">
+        <header class="modal-reporte__barra">
+            <div><span>Documento generado</span><h2 id="titulo-reporte-maestro" data-reporte-maestro-titulo>Reporte maestro</h2></div>
+            <div class="modal-reporte__acciones">
+                <button type="button" class="boton-modal boton-modal--primario" data-accion="imprimir-reporte">{% include "gestion/iconos.html" with icono="impresora" %} Imprimir / Guardar PDF</button>
+                <button type="button" class="boton-modal" data-accion="cerrar-reporte">Volver</button>
+            </div>
+        </header>
+        <div class="visor-reporte">
+            <article class="hoja-reporte hoja-reporte-maestro">
+                <header class="reporte-maestro__encabezado">
+                    <div>{% include "gestion/iconos.html" with icono="institucion" %}</div>
+                    <section><strong>CAJA DE SEGURO SOCIAL</strong><span>AGENCIA DE BOQUETE – DEPARTAMENTO DE INVESTIGACIÓN</span><h3 data-reporte-maestro-subtitulo>LISTADO DEL AÑO</h3></section>
+                    <div></div>
+                </header>
+                <section class="reporte-maestro__periodo"><p><strong>Fecha:</strong> <span data-reporte-maestro-fecha></span></p><p><strong>Tipo:</strong> <span data-reporte-maestro-tipo></span></p><p><strong>Período:</strong> <span data-reporte-maestro-periodo></span></p></section>
+                <table class="tabla-reporte-maestro">
+                    <thead><tr><th>Arch.</th><th>Tipo</th><th>Fecha</th><th>N.º patronal</th><th>Empleador</th><th>Dirección</th><th>Actividad</th></tr></thead>
+                    <tbody data-reporte-maestro-cuerpo></tbody>
+                </table>
+                <p class="reporte-maestro__total">Total de registros: <strong data-reporte-maestro-total>0</strong></p>
+            </article>
+        </div>
+    </div>
+</div>
+
+<div class="modal-reporte" data-modulo-planilla data-guardar-url="{% url 'gestion:guardar_planilla' %}" aria-hidden="true">
+    <div class="modal-reporte__panel modal-reporte__panel--planilla" role="dialog" aria-modal="true" aria-labelledby="titulo-planilla">
+        <header class="modal-reporte__barra planilla-barra">
+            <div>
+                <span>Módulo</span>
+                <h2 id="titulo-planilla">Cálculo de planilla originada de operativo</h2>
+            </div>
+            <div class="modal-reporte__acciones">
+                <button type="button" class="boton-modal boton-modal--primario" data-accion="guardar-planilla">
+                    {% include "gestion/iconos.html" with icono="guardar" %}
+                    Guardar planilla
+                </button>
+                <button type="button" class="boton-modal" data-accion="cerrar-reporte">Cerrar</button>
+            </div>
+        </header>
+        <section class="pantalla-planilla">
+            <aside class="planilla-listado" aria-label="Establecimientos disponibles">
+                <header>
+                    <strong>Establecimientos</strong>
+                    <span>{{ total_inscripciones }} registros disponibles</span>
+                </header>
+                <div class="planilla-listado__items">
+                    {% for registro in registros_operativos %}
+                        <button type="button" data-planilla-item
+                            data-id="{{ registro.pk }}"
+                            data-fecha="{{ registro.fecha_operacion|date:'Y-m-d' }}"
+                            data-fecha-texto="{{ registro.fecha_operacion|date:'d/m/Y' }}"
+                            data-sipe="{{ registro.numero_sipe }}"
+                            data-mainframe="{{ registro.numero_mainframe }}"
+                            data-establecimiento="{{ registro.nombre_establecimiento }}"
+                            data-razon="{{ registro.empleador_razon_social }}"
+                            data-cedula="{{ registro.cedula_ruc }}"
+                            data-entrevistados="{{ registro.numero_entrevistados|default_if_none:'' }}"
+                            data-salario="{{ registro.monto_salarios|default_if_none:'' }}">
+                            <strong>{{ registro.nombre_establecimiento }}</strong>
+                            <span>{{ registro.cedula_ruc|default:"Sin identificación" }}</span>
+                            <small>{{ registro.numero_registro|default:"1" }}</small>
+                        </button>
+                    {% empty %}
+                        <p>No hay establecimientos registrados.</p>
+                    {% endfor %}
+                </div>
+            </aside>
+
+            <main class="planilla-contenido">
+                <header class="planilla-encabezado">
+                    <div>
+                        <span class="indicador-seccion">8</span>
+                        <h3>Datos del operativo</h3>
+                    </div>
+                    <div class="planilla-datos">
+                        <label>Fecha de Operación:<input type="text" data-planilla-campo="fecha"></label>
+                        <label class="planilla-datos__ancho">Nombre del establecimiento:<input type="text" data-planilla-campo="establecimiento"></label>
+                        <label>No. SIPE:<input type="text" data-planilla-campo="sipe"></label>
+                        <label>No. MAINFRAME:<input type="text" data-planilla-campo="mainframe"></label>
+                        <label class="planilla-datos__ancho planilla-datos__nombre-secundario"><span>Nombre del establecimiento:</span><input type="text" data-planilla-campo="razon"></label>
+                    </div>
+                </header>
+
+                <div class="planilla-tabla-contenedor" tabindex="0" aria-label="Calculo de planilla con desplazamiento horizontal">
+                    <table class="tabla-planilla">
+                        <thead>
+                            <tr>
+                                <th>CEDULA</th>
+                                <th>NOMBRE</th>
+                                <th>Inicio -decl.</th>
+                                <th>F. Aproxim.</th>
+                                <th>P X HRA.</th>
+                                <th>P X DIA</th>
+                                <th>CANT</th>
+                                <th>SALARIO</th>
+                                <th>FECHA SIPE</th>
+                                <th>SUELDO SIPE</th>
+                                <th>NOTAS</th>
+                            </tr>
+                        </thead>
+                        <tbody data-planilla-cuerpo>
+                            <tr>
+                                <td><input data-planilla-fila="cedula"></td>
+                                <td><input data-planilla-fila="nombre"></td>
+                                <td><input data-planilla-fila="inicio"></td>
+                                <td><input data-planilla-fila="aproximada"></td>
+                                <td><input data-planilla-fila="hora"></td>
+                                <td><input data-planilla-fila="dia"></td>
+                                <td><input data-planilla-fila="cantidad"></td>
+                                <td><input data-planilla-fila="salario"></td>
+                                <td><input data-planilla-fila="fechaSipe" value="//"></td>
+                                <td><input data-planilla-fila="sueldoSipe"></td>
+                                <td><input data-planilla-fila="notas" value="memo"></td>
+                            </tr>
+                            {% for fila in "12345678901234567890" %}
+                                <tr>
+                                    <td><input></td><td><input></td><td><input></td><td><input></td><td><input></td>
+                                    <td><input></td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <section class="planilla-notas">
+                    <label>
+                        <strong>Notas</strong>
+                        <textarea>SE REALIZA INSPECCION AL SITIO NO SE LOGRO CONCRETAR DEBIDO A QUE EL LUGAR ESTABA INACCESIBLE POR TRABAJOS EN MEJORAS DE LA CARRETERA, TALA DE ARBOLES. PENDIENTE.</textarea>
+                    </label>
+                </section>
+
+                <footer class="planilla-pie">
+                    <label>SALARIOS OMITIDOS<input type="number" step="0.01" data-planilla-resumen="salariosOmitidos" value="0.00"></label>
+                    <label>23% S.S.<input type="number" step="0.01" data-planilla-resumen="seguroSocial" value="0.00"></label>
+                    <label>AL DIA<input type="text"></label>
+                    <label>ENTREVISTADOS<input type="number" data-planilla-resumen="entrevistados" value="0"></label>
+                    <label>OMITIDOS<input type="number" data-planilla-resumen="omitidos"></label>
+                    <div class="planilla-acciones">
+                        <p class="planilla-estado" data-planilla-estado aria-live="polite"></p>
+                        <button type="button" class="boton-modal" data-accion="abrir-reporte-avances">
+                            {% include "gestion/iconos.html" with icono="carpeta" %}
+                            Avances
+                        </button>
+                        <button type="button" class="boton-modal">
+                            {% include "gestion/iconos.html" with icono="impresora" %}
+                            Detalle
+                        </button>
+                    </div>
+                </footer>
+            </main>
+        </section>
     </div>
 </div>
 
@@ -976,6 +1663,7 @@
 
 {{ reactivaciones_datos|json_script:"reactivaciones-datos" }}
 {{ inactividades_datos|json_script:"inactividades-datos" }}
+{{ planillas_datos|json_script:"planillas-datos" }}
 
 <div class="modal-reporte" data-reporte-reactivacion aria-hidden="true">
     <div class="modal-reporte__panel" role="dialog" aria-modal="true" aria-labelledby="titulo-reporte-reactivacion">
